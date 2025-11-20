@@ -30,3 +30,38 @@ footer {
     text-align: center;
     padding: 10px;
 }
+/* 공통 레이아웃 */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+header {
+    background: #333;
+    color: white;
+    padding: 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+body {
+    margin-top: 80px; /* 메뉴가 고정되니까 아래로 밀기 */
+}
+.hero {
+    background: url("https://picsum.photos/1200/400?blur=2") center/cover no-repeat;
+    color: white;
+    text-align: center;
+    padding: 120px 20px;
+    margin-bottom: 30px;
+}
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+.hero p {
+    font-size: 22px;
+}
+
