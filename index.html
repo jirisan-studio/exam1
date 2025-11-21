@@ -30,27 +30,17 @@
     // 지도 생성 (구례군 중심)
     const map = L.map('map').setView([35.2038, 127.4629], 12);
 
-    // OSM Tile Layer 추가
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-</script>
-<script>
-    // 지도 생성 (구례군 중심)
-    const map = L.map('map').setView([35.2038, 127.4629], 12);
-
     // 타일 레이어
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 👉 마커 추가 (예: 구례군청)
+    // 👉 마커 추가 (구례군청)
     const marker = L.marker([35.2038, 127.4629]).addTo(map);
 
-    // 👉 마커 클릭 시 팝업
-    marker.bindPopup("<b>구례군청</b><br>전남 구례군 구례읍").openPopup();
+    // 👉 팝업 연결
+    marker.bindPopup("<b>구례군청</b><br>전라남도 구례군 구례읍").openPopup();
 </script>
 
 </body>
