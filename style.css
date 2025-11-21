@@ -1,14 +1,22 @@
+/* 기본 설정 */
 body {
     font-family: "Noto Sans KR", sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
+    margin-top: 80px; /* 고정 헤더 때문에 여백 확보 */
 }
 
+/* 고정 헤더 */
 header {
     background: #333;
     color: white;
     padding: 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
 }
 
 nav a {
@@ -21,35 +29,18 @@ nav a:hover {
     text-decoration: underline;
 }
 
-section {
-    padding: 20px;
-}
-
-footer {
-    background: #eee;
-    text-align: center;
-    padding: 10px;
-}
-/* 공통 레이아웃 */
+/* 레이아웃 공통 */
 .container {
     max-width: 900px;
     margin: auto;
     padding: 20px;
 }
-header {
-    background: #333;
-    color: white;
-    padding: 15px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10;
+
+section {
+    padding: 20px;
 }
 
-body {
-    margin-top: 80px; /* 메뉴가 고정되니까 아래로 밀기 */
-}
+/* Hero Section */
 .hero {
     background: url("https://picsum.photos/1200/400?blur=2") center/cover no-repeat;
     color: white;
@@ -57,11 +48,19 @@ body {
     padding: 120px 20px;
     margin-bottom: 30px;
 }
+
 .hero h1 {
     font-size: 48px;
     margin-bottom: 10px;
 }
+
 .hero p {
     font-size: 21px;
 }
 
+/* Footer */
+footer {
+    background: #eee;
+    text-align: center;
+    padding: 10px;
+}
