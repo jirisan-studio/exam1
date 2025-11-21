@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet 지도 테스트</title>
+    <title>Leaflet 여러 마커 표시</title>
 
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
@@ -22,13 +19,13 @@
 
 <body>
 
-<h2>Leaflet.js 지도 테스트</h2>
+<h2>Leaflet.js 여러 마커 표시 테스트</h2>
 
 <div id="map"></div>
 
 <script>
-    // 지도 생성 (구례군 중심)
-    const map = L.map('map').setView([35.2038, 127.4629], 12);
+    // 지도 생성
+    const map = L.map('map').setView([35.20, 127.46], 11);
 
     // 타일 레이어
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -36,11 +33,20 @@
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 👉 마커 추가 (구례군청)
-    const marker = L.marker([35.2038, 127.4629]).addTo(map);
+    // 여러 장소 데이터 배열
+    const places = [
+        { name: "구례군청", lat: 35.2038, lng: 127.4629 },
+        { name: "구례역",   lat: 35.2871, lng: 127.5233 },
+        { name: "피아골",   lat: 35.2345, lng: 127.5162 },
+        { name: "화엄사",   lat: 35.2973, lng: 127.4636 },
+        { name: "지리산온천", lat: 35.2562, lng: 127.4679 }
+    ];
 
-    // 👉 팝업 연결
-    marker.bindPopup("<b>구례군청</b><br>전라남도 구례군 구례읍").openPopup();
+    // places 배열을 순회해 마커 생성
+    places.forEach(p => {
+        const marker = L.marker([p.lat, p.lng]).addTo(map);
+        marker.bindPopup(`<b>${p.name}</b>`);
+    });
 </script>
 
 </body>
