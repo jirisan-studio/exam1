@@ -148,9 +148,23 @@ footer {
 }
 
 /* -----------------------------------
-   반응형
+   반응형 (태블릿)
 ----------------------------------- */
-@media (max-width: 600px) {
+@media (max-width: 1200px) {
+    .container {
+        max-width: 90%;
+        padding: 20px;
+    }
+
+    .header-inner {
+        padding: 0 30px;
+    }
+}
+
+/* -----------------------------------
+   반응형 (모바일)
+----------------------------------- */
+@media (max-width: 768px) {
 
     .header-inner {
         padding: 0 20px;
@@ -164,23 +178,25 @@ footer {
         font-size: 14px;
     }
 
-    .hero {
-        padding: 110px 20px;
-    }
-
-    .hero h1 {
-        font-size: 34px;
-    }
-
-    .hero p {
-        font-size: 17px;
-    }
-
     .container {
+        max-width: 100%;
         padding: 15px;
     }
 
     .section-card {
         padding: 20px;
+        margin: 10px 0;
+    }
+
+    .hero {
+        padding: 90px 20px;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+    }
+
+    .hero p {
+        font-size: 15px;
     }
 }
