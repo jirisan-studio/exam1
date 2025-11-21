@@ -3,76 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>약국 정보 API (구례읍)</title>
+    <title>Leaflet 지도 테스트</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        body { font-family: "Noto Sans KR", sans-serif; padding: 20px; }
-        .card {
-            background: #f8f8f8;
-            padding: 15px;
+        #map {
+            width: 100%;
+            height: 500px;
             border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            line-height: 1.6;
-        }
-        .title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
         }
     </style>
 </head>
 
 <body>
 
-    <h2>전국 약국 정보 조회 (CORS 해결 버전)</h2>
+<h2>Leaflet.js 지도 테스트</h2>
 
-    <input id="dong" type="text" placeholder="동 이름 입력 (예: 구례읍)" />
-    <button id="btn">조회</button>
+<div id="map"></div>
 
-    <div id="list"></div>
+<script>
+    // 지도 생성 (구례군 중심)
+    const map = L.map('map').setView([35.2038, 127.4629], 12);
 
-    <script>
-        const btn = document.getElementById("btn");
-        const list = document.getElementById("list");
-
-        btn.addEventListener("click", () => {
-            const dong = document.getElementById("dong").value.trim();
-            const API_KEY = "aefb2d81d98a261063b5a55e928504fd246622cdc34f474da0ffc56447df5e4a";
-
-            const proxy = "https://cors-anywhere.herokuapp.com/";
-
-            const url = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyBasisList?serviceKey=${API_KEY}&pageNo=1&numOfRows=10&emdongNm=${encodeURI(dong)}`;
-
-            fetch(proxy + url)
-                .then(res => res.text())
-                .then(xmlText => {
-                    const xml = new DOMParser().parseFromString(xmlText, "text/xml");
-                    const items = xml.getElementsByTagName("item");
-
-                    if (items.length === 0) {
-                        list.innerHTML = "조회된 약국이 없습니다.";
-                        return;
-                    }
-
-                    list.innerHTML = "";
-                    for (let item of items) {
-                        const name = item.getElementsByTagName("yadmNm")[0]?.textContent;
-                        const addr = item.getElementsByTagName("addr")[0]?.textContent;
-                        const tel = item.getElementsByTagName("telno")[0]?.textContent;
-
-                        list.innerHTML += `
-                            <div class="card">
-                                <div class="title">${name}</div>
-                                주소: ${addr}<br>
-                                전화: ${tel}
-                            </div>
-                        `;
-                    }
-                })
-                .catch(err => list.innerHTML = "오류 발생: " + err);
-        });
-    </script>
+    // OSM Tile Layer 추가
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+</script>
 
 </body>
 </html>
