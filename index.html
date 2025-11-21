@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>약국 정보 API 실습(XML)</title>
+    <title>약국 정보 API (구례읍)</title>
 
     <style>
-        body {
-            font-family: "Noto Sans KR", sans-serif;
-            padding: 20px;
-        }
+        body { font-family: "Noto Sans KR", sans-serif; padding: 20px; }
         .card {
             background: #f8f8f8;
             padding: 15px;
@@ -28,9 +25,9 @@
 
 <body>
 
-    <h2>전국 약국 정보 조회(XML API)</h2>
+    <h2>전국 약국 정보 조회 (CORS 해결 버전)</h2>
 
-    <input id="dong" type="text" placeholder="동 이름 입력 (예: 서초2동)" />
+    <input id="dong" type="text" placeholder="동 이름 입력 (예: 구례읍)" />
     <button id="btn">조회</button>
 
     <div id="list"></div>
@@ -41,24 +38,24 @@
 
         btn.addEventListener("click", () => {
             const dong = document.getElementById("dong").value.trim();
-            const API_KEY = "aefb2d81d98a261063b5a55e9928504fd246226dc34f474da0ffc56447df5e4a"; 
+            const API_KEY = "aefb2d81d98a261063b5a55e9928504fd246226dc34f474da0ffc56447df5e4a";
 
-            if (!dong) {
-                alert("동 이름을 입력하세요!");
-                return;
-            }
+            const proxy = "https://cors-anywhere.herokuapp.com/";
 
             const url = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyBasisList?serviceKey=${API_KEY}&pageNo=1&numOfRows=10&emdongNm=${encodeURI(dong)}`;
 
-            fetch(url)
+            fetch(proxy + url)
                 .then(res => res.text())
                 .then(xmlText => {
-                    const parser = new DOMParser();
-                    const xml = parser.parseFromString(xmlText, "text/xml");
-
+                    const xml = new DOMParser().parseFromString(xmlText, "text/xml");
                     const items = xml.getElementsByTagName("item");
-                    list.innerHTML = "";
 
+                    if (items.length === 0) {
+                        list.innerHTML = "조회된 약국이 없습니다.";
+                        return;
+                    }
+
+                    list.innerHTML = "";
                     for (let item of items) {
                         const name = item.getElementsByTagName("yadmNm")[0]?.textContent;
                         const addr = item.getElementsByTagName("addr")[0]?.textContent;
@@ -73,9 +70,7 @@
                         `;
                     }
                 })
-                .catch(err => {
-                    list.innerHTML = "오류 발생: " + err;
-                });
+                .catch(err => list.innerHTML = "오류 발생: " + err);
         });
     </script>
 
