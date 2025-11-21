@@ -1,16 +1,14 @@
-<div id="box" class="blueBox"></div>
-<button id="toggle">색 바꾸기</button>
+<input id="nameInput" placeholder="이름 입력">
+<button id="helloBtn">확인</button>
 
-<style>
-.blueBox { width: 100px; height: 100px; background: blue; }
-.redBox  { background: red; }
-</style>
+<p id="result"></p>
 
 <script>
-    const box = document.getElementById("box");
-    const toggleBtn = document.getElementById("toggle");
+    const input = document.getElementById("nameInput");
+    const btn = document.getElementById("helloBtn");
+    const result = document.getElementById("result");
 
-    toggleBtn.addEventListener("click", () => {
-        box.classList.toggle("redBox");
+    btn.addEventListener("click", () => {
+        result.textContent = `안녕하세요, ${input.value}님!`;
     });
 </script>
