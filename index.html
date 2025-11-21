@@ -3,28 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API 테스트</title>
+    <title>날씨 API 테스트</title>
 </head>
-
 <body>
 
-    <h2>오늘의 명언</h2>
-    <p id="quote">버튼을 눌러 명언을 불러오세요.</p>
+    <h2>현재 날씨</h2>
 
-    <button id="loadBtn">명언 가져오기</button>
+    <input type="text" id="city" placeholder="도시 이름 입력 (예: Seoul)">
+    <button id="btn">날씨 가져오기</button>
+
+    <pre id="result">데이터가 여기에 표시됩니다...</pre>
 
     <script>
-        const btn = document.getElementById("loadBtn");
-        const quoteEl = document.getElementById("quote");
+        const btn = document.getElementById("btn");
+        const result = document.getElementById("result");
 
         btn.addEventListener("click", () => {
 
-            fetch("https://api.adviceslip.com/advice")
-                .then(response => response.json())
-                .then(data => {
-                    quoteEl.textContent = data.slip.advice;
-                });
+            const city = document.getElementById("city").value.trim();
+            const API_KEY = "39395d8dd92ea34553ccebfcd7e0178e";
 
+            if (!city) {
+                result.textContent = "도시 이름을 입력해주세요.";
+                return;
+            }
+
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    result.textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(err => {
+                    result.textContent = "오류 발생: " + err;
+                });
         });
     </script>
 
