@@ -1,76 +1,11 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
+<p id="msg">원래 문구입니다.</p>
+<button id="changeBtn">문구 바꾸기</button>
 
-    <!-- 모바일 반응형 필수 설정 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+    const text = document.getElementById("msg");
+    const btn = document.getElementById("changeBtn");
 
-    <title>내 첫 웹사이트</title>
-    <link rel="stylesheet" href="style.css?v=4">
-</head>
-
-<body>
-
-    <!-- Header -->
-    <header>
-        <div class="header-inner">
-            <h1>내 사이트</h1>
-
-            <!-- 모바일 햄버거 메뉴 버튼 -->
-            <div class="menu-toggle">☰</div>
-
-            <nav>
-                <a href="#">홈</a>
-                <a href="#about">소개</a>
-                <a href="#contact">연락처</a>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <h1>지리산 스튜디오</h1>
-        <p>코딩 연습하는 중입니다. 천천히, 하지만 확실하게.</p>
-    </section>
-
-    <!-- Main Content -->
-    <div class="container">
-
-        <section id="about" class="section-card">
-            <h2>소개</h2>
-            <p>
-                지리산 스튜디오는 작은 웹 개발 연습 공간입니다.<br>
-                HTML, CSS, GitHub Pages를 이용해 하나씩 만들어가고 있습니다.
-            </p>
-        </section>
-
-        <section id="contact" class="section-card">
-            <h2>연락</h2>
-            <p>문의가 있다면 아래 이메일로 연락할 수 있습니다.</p>
-
-            <div class="contact-box">
-                <p>📧 example@example.com</p>
-                <button class="contact-btn">메일 보내기</button>
-            </div>
-        </section>
-
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 jirisan-studio</p>
-    </footer>
-
-    <!-- 햄버거 메뉴 동작 스크립트 -->
-    <script>
-        const toggleBtn = document.querySelector(".menu-toggle");
-        const navMenu = document.querySelector("nav");
-
-        toggleBtn.addEventListener("click", () => {
-            navMenu.classList.toggle("show");
-        });
-    </script>
-
-</body>
-</html>
+    btn.addEventListener("click", () => {
+        text.textContent = "문구가 변경되었습니다!";
+    });
+</script>
