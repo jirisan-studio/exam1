@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>내 첫 웹사이트</title>
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 
 <body>
@@ -12,6 +12,10 @@
     <header>
         <div class="header-inner">
             <h1>내 사이트</h1>
+
+            <!-- 모바일 햄버거 메뉴 버튼 -->
+            <div class="menu-toggle">☰</div>
+
             <nav>
                 <a href="#">홈</a>
                 <a href="#about">소개</a>
@@ -23,7 +27,7 @@
     <!-- Hero Section -->
     <section class="hero">
         <h1>지리산 스튜디오</h1>
-        <p>코딩 연습하는 중입니다? 천천히, 하지만 확실하게.</p>
+        <p>코딩 연습하는 중입니다. 천천히, 하지만 확실하게.</p>
     </section>
 
     <!-- Main Content -->
@@ -39,7 +43,7 @@
 
         <section id="contact" class="section-card">
             <h2>연락</h2>
-            <p>문의가 필요하다면 아래 이메일로 연락해 주세요.</p>
+            <p>문의가 있다면 아래 이메일로 연락할 수 있습니다.</p>
 
             <div class="contact-box">
                 <p>📧 example@example.com</p>
@@ -53,6 +57,16 @@
     <footer>
         <p>© 2025 jirisan-studio</p>
     </footer>
+
+    <!-- 햄버거 메뉴 동작 스크립트 -->
+    <script>
+        const toggleBtn = document.querySelector(".menu-toggle");
+        const navMenu = document.querySelector("nav");
+
+        toggleBtn.addEventListener("click", () => {
+            navMenu.classList.toggle("show");
+        });
+    </script>
 
 </body>
 </html>
