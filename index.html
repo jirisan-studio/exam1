@@ -3,51 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet 여러 마커 표시</title>
+    <title>My Web App</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <style>
-        #map {
-            width: 100%;
-            height: 500px;
-            border-radius: 10px;
-        }
-    </style>
+    <!-- CSS 연결 -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<h2>Leaflet.js 여러 마커 표시 테스트</h2>
+    <header>
+        <h1>지리산 스튜디오 웹앱</h1>
+    </header>
 
-<div id="map"></div>
+    <main>
+        <p>웹앱 구조 세팅이 완료되었습니다.</p>
+    </main>
 
-<script>
-    // 지도 생성
-    const map = L.map('map').setView([35.20, 127.46], 11);
+    <footer>
+        © 2025 jirisan-studio. All rights reserved.
+    </footer>
 
-    // 타일 레이어
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    // 여러 장소 데이터 배열
-    const places = [
-        { name: "구례군청", lat: 35.2038, lng: 127.4629 },
-        { name: "구례역",   lat: 35.2871, lng: 127.5233 },
-        { name: "피아골",   lat: 35.2345, lng: 127.5162 },
-        { name: "화엄사",   lat: 35.2973, lng: 127.4636 },
-        { name: "지리산온천", lat: 35.2562, lng: 127.4679 }
-    ];
-
-    // places 배열을 순회해 마커 생성
-    places.forEach(p => {
-        const marker = L.marker([p.lat, p.lng]).addTo(map);
-        marker.bindPopup(`<b>${p.name}</b>`);
-    });
-</script>
-
+    <!-- JS 연결 -->
+    <script src="js/app.js"></script>
 </body>
 </html>
