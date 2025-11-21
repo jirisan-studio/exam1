@@ -1,5 +1,35 @@
-<script>
-fetch("https://wttr.in/Seoul?format=j1")
-  .then(res => res.json())
-  .then(data => console.log(data));
-</script>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wttr.in JSON 날씨</title>
+</head>
+<body>
+
+    <h2>wttr.in 날씨 테스트</h2>
+
+    <button id="btn">서울 날씨 불러오기</button>
+
+    <pre id="result">여기에 JSON 결과 표시됩니다...</pre>
+
+    <script>
+        const btn = document.getElementById("btn");
+        const result = document.getElementById("result");
+
+        btn.addEventListener("click", () => {
+
+            fetch("https://wttr.in/Seoul?format=j1")
+                .then(res => res.json())
+                .then(data => {
+                    result.textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(err => {
+                    result.textContent = "오류: " + err;
+                });
+
+        });
+    </script>
+
+</body>
+</html>
