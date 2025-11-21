@@ -6,35 +6,38 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    margin-top: 80px; /* 고정 헤더 공간 확보 */
+    margin-top: 80px;
     background-color: #fafafa;
     color: #333;
 }
 
 /* -----------------------------------
-   고정 헤더
+   Header
 ----------------------------------- */
 header {
     background: #333;
     color: white;
-    padding: 15px 40px;
+    padding: 15px 0;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 10;
+}
 
+/* 내부 콘텐츠 래퍼 */
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    max-width: 1200px;   /* 헤더 내용 최대폭 지정 */
-    margin: 0 auto;      /* 가운데 정렬 */
 }
 
 nav {
-    display: flex;     /* 메뉴 균일 정렬 */
-    gap: 25px;         /* 메뉴 간격 */
+    display: flex;
+    gap: 25px;
 }
 
 nav a {
@@ -48,7 +51,7 @@ nav a:hover {
 }
 
 /* -----------------------------------
-   레이아웃 공통
+   Layout 공통
 ----------------------------------- */
 .container {
     max-width: 900px;
@@ -84,7 +87,6 @@ section {
     z-index: 1;
 }
 
-/* 오버레이 위 텍스트 */
 .hero h1,
 .hero p {
     position: relative;
@@ -101,7 +103,7 @@ section {
 }
 
 /* -----------------------------------
-   Section Card 디자인
+   Section Card
 ----------------------------------- */
 .section-card {
     background: white;
@@ -111,7 +113,6 @@ section {
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-/* Contact 박스 */
 .contact-box {
     margin-top: 20px;
     padding: 15px;
@@ -128,7 +129,6 @@ section {
     color: white;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 15px;
 }
 
 .contact-btn:hover {
@@ -148,12 +148,12 @@ footer {
 }
 
 /* -----------------------------------
-   반응형(모바일)
+   반응형
 ----------------------------------- */
 @media (max-width: 600px) {
-    header {
-        padding: 12px 20px;
-        max-width: 100%;
+
+    .header-inner {
+        padding: 0 20px;
     }
 
     nav {

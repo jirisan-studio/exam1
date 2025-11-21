@@ -3,11 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>내 첫 웹사이트</title>
-    <link rel="stylesheet" href="style.css?v=2">
-
+    <link rel="stylesheet" href="style.css?v=1">
 </head>
 
 <body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-inner">
+            <h1>내 사이트</h1>
+            <nav>
+                <a href="#">홈</a>
+                <a href="#about">소개</a>
+                <a href="#contact">연락처</a>
+            </nav>
+        </div>
+    </header>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -15,19 +26,9 @@
         <p>코딩 연습하는 중입니다? 천천히, 하지만 확실하게.</p>
     </section>
 
-    <!-- Header & Navigation -->
-    <header>
-        <h1>내 사이트</h1>
-        <nav>
-            <a href="#"> 홈 </a>
-            <a href="#about">소개</a>
-            <a href="#contact">연락처</a>
-        </nav>
-    </header>
-
     <!-- Main Content -->
     <div class="container">
-        
+
         <section id="about" class="section-card">
             <h2>소개</h2>
             <p>
@@ -38,14 +39,13 @@
 
         <section id="contact" class="section-card">
             <h2>연락</h2>
-            <p>문의가 필요하다면 아래 이메일로 연락 가능해요.</p>
+            <p>문의가 필요하다면 아래 이메일로 연락해 주세요.</p>
 
             <div class="contact-box">
                 <p>📧 example@example.com</p>
                 <button class="contact-btn">메일 보내기</button>
             </div>
         </section>
-
 
     </div>
 
