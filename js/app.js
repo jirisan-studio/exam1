@@ -1,55 +1,78 @@
-console.log("웹앱 기본 구조 로드 완료");
+console.log("To-Do App Loaded");
 
-// 메모 저장 버튼
-document.getElementById("saveBtn").addEventListener("click", saveMemo);
+// 초기 로딩
+loadTodos();
 
-function saveMemo() {
-    const input = document.getElementById("memoInput");
+// 할 일 추가 이벤트
+document.getElementById("addTodoBtn").addEventListener("click", addTodo);
+
+function addTodo() {
+    const input = document.getElementById("todoInput");
     const text = input.value.trim();
+    if (!text) return alert("할 일을 입력하세요!");
 
-    if (!text) return alert("메모를 입력하세요!");
+    const todos = JSON.parse(localStorage.getItem("todos") || "[]");
 
-    // 기존 리스트 불러오기
-    const list = JSON.parse(localStorage.getItem("memos") || "[]");
+    todos.push({
+        text: text,
+        completed: false
+    });
 
-    // 새로운 메모 추가
-    list.push(text);
-
-    // 다시 저장
-    localStorage.setItem("memos", JSON.stringify(list));
+    localStorage.setItem("todos", JSON.stringify(todos));
 
     input.value = "";
-    loadMemos();
+    loadTodos();
 }
 
-function loadMemos() {
-    const list = JSON.parse(localStorage.getItem("memos") || "[]");
-    const ul = document.getElementById("memoList");
+// 할 일 목록 표시
+function loadTodos() {
+    const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+    const ul = document.getElementById("todoList");
 
     ul.innerHTML = "";
 
-    list.forEach((memo, index) => {
+    todos.forEach((todo, index) => {
         const li = document.createElement("li");
-        li.textContent = memo;
 
-        // 삭제 버튼 추가
+        // 텍스트
+        const span = document.createElement("span");
+        span.textContent = todo.text;
+        if (todo.completed) span.classList.add("completed");
+
+        // 완료 버튼
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = todo.completed ? "취소" : "완료";
+        toggleBtn.onclick = () => toggleTodo(index);
+
+        // 삭제 버튼
         const delBtn = document.createElement("button");
         delBtn.textContent = "삭제";
-        delBtn.style.marginLeft = "10px";
-        delBtn.onclick = () => deleteMemo(index);
+        delBtn.onclick = () => deleteTodo(index);
 
+        li.appendChild(span);
+        li.appendChild(toggleBtn);
         li.appendChild(delBtn);
+
         ul.appendChild(li);
     });
 }
 
-function deleteMemo(index) {
-    let list = JSON.parse(localStorage.getItem("memos") || "[]");
-    list.splice(index, 1);
-    localStorage.setItem("memos", JSON.stringify(list));
-    loadMemos();
+// 완료/취소 토글
+function toggleTodo(index) {
+    const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+
+    todos[index].completed = !todos[index].completed;
+
+    localStorage.setItem("todos", JSON.stringify(todos));
+    loadTodos();
 }
 
-// 페이지 로딩 시 기존 데이터 불러오기
-loadMemos();
+// 삭제 기능
+function deleteTodo(index) {
+    const todos = JSON.parse(localStorage.getItem("todos") || "[]");
 
+    todos.splice(index, 1);
+
+    localStorage.setItem("todos", JSON.stringify(todos));
+    loadTodos();
+}
