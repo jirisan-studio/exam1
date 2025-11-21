@@ -3,48 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Mode Test</title>
-
-    <style>
-        body {
-            font-family: "Noto Sans KR", sans-serif;
-            padding: 40px;
-            transition: 0.3s;
-        }
-
-        button {
-            padding: 10px 18px;
-            background: #eee;
-            border: none;
-            cursor: pointer;
-            border-radius: 6px;
-        }
-
-        /* 다크모드일 때 바뀌는 스타일 */
-        body.dark-mode {
-            background: #222;
-            color: white;
-        }
-
-        body.dark-mode button {
-            background: #444;
-            color: white;
-        }
-    </style>
+    <title>API 테스트</title>
 </head>
 
 <body>
 
-    <h1>다크모드 테스트</h1>
-    <p>아래 버튼을 눌러보세요.</p>
+    <h2>오늘의 명언</h2>
+    <p id="quote">버튼을 눌러 명언을 불러오세요.</p>
 
-    <button id="darkBtn">🌙 다크모드</button>
+    <button id="loadBtn">명언 가져오기</button>
 
     <script>
-        const btn = document.getElementById("darkBtn");
+        const btn = document.getElementById("loadBtn");
+        const quoteEl = document.getElementById("quote");
 
         btn.addEventListener("click", () => {
-            document.body.classList.toggle("dark-mode");
+
+            fetch("https://api.adviceslip.com/advice")
+                .then(response => response.json())
+                .then(data => {
+                    quoteEl.textContent = data.slip.advice;
+                });
+
         });
     </script>
 
