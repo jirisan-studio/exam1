@@ -1,14 +1,52 @@
-<input id="nameInput" placeholder="이름 입력">
-<button id="helloBtn">확인</button>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Test</title>
 
-<p id="result"></p>
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            padding: 40px;
+            transition: 0.3s;
+        }
 
-<script>
-    const input = document.getElementById("nameInput");
-    const btn = document.getElementById("helloBtn");
-    const result = document.getElementById("result");
+        button {
+            padding: 10px 18px;
+            background: #eee;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+        }
 
-    btn.addEventListener("click", () => {
-        result.textContent = `안녕하세요, ${input.value}님!`;
-    });
-</script>
+        /* 다크모드일 때 바뀌는 스타일 */
+        body.dark-mode {
+            background: #222;
+            color: white;
+        }
+
+        body.dark-mode button {
+            background: #444;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>다크모드 테스트</h1>
+    <p>아래 버튼을 눌러보세요.</p>
+
+    <button id="darkBtn">🌙 다크모드</button>
+
+    <script>
+        const btn = document.getElementById("darkBtn");
+
+        btn.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+        });
+    </script>
+
+</body>
+</html>
