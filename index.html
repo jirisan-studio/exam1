@@ -3,32 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wttr.in JSON 날씨</title>
+    <title>날씨 요약 표시</title>
+
+    <style>
+        .card {
+            max-width: 300px;
+            padding: 20px;
+            border-radius: 15px;
+            background: #f5f5f5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
+
 <body>
 
-    <h2>wttr.in 날씨 테스트</h2>
-
+    <h2>wttr.in 날씨 요약</h2>
     <button id="btn">서울 날씨 불러오기</button>
 
-    <pre id="result">여기에 JSON 결과 표시됩니다...</pre>
+    <div id="weatherCard"></div>
 
     <script>
         const btn = document.getElementById("btn");
-        const result = document.getElementById("result");
+        const card = document.getElementById("weatherCard");
 
         btn.addEventListener("click", () => {
 
             fetch("https://wttr.in/Seoul?format=j1")
                 .then(res => res.json())
                 .then(data => {
-                    result.textContent = JSON.stringify(data, null, 2);
+
+                    const now = data.current_condition[0];
+                    const area = data.nearest_area[0].areaName[0].value;
+                    const country = data.nearest_area[0].country[0].value;
+                    const desc = now.weatherDesc[0].value;
+
+                    // 카드 형태로 표시
+                    card.innerHTML = `
+                        <div class="card">
+                            <div class="title">${area}, ${country}</div>
+                            🌤 상태: ${desc}<br>
+                            🌡 기온: ${now.temp_C}℃<br>
+                            💧 습도: ${now.humidity}%<br>
+                            🌬 바람: ${now.windspeedKmph} km/h
+                        </div>
+                    `;
                 })
                 .catch(err => {
-                    result.textContent = "오류: " + err;
+                    card.innerHTML = "오류 발생: " + err;
                 });
 
         });
+
     </script>
 
 </body>
