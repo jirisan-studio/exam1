@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web App</title>
+    <title>Supabase Todo App</title>
 
-    <!-- CSS 연결 -->
+    <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
     <header>
-        <h1>지리산 스튜디오 웹앱</h1>
+        <h1>Supabase Todo App</h1>
     </header>
 
-        <main>
-            <h2>할 일 목록</h2>
+    <main>
+        <h2>할 일 추가</h2>
+        <input type="text" id="todoInput" placeholder="할 일을 입력하세요">
+        <button id="addBtn">추가</button>
 
-            <div style="margin-bottom: 10px;">
-                <input type="text" id="todoInput" placeholder="할 일을 입력하세요" />
-                <button id="addTodoBtn">추가</button>
-            </div>
-
-            <ul id="todoList"></ul>
-        </main>
-
+        <h2>할 일 목록</h2>
+        <ul id="todoList"></ul>
+    </main>
 
     <footer>
-        © 2025 jirisan-studio. All rights reserved.
+        © 2025 jirisan-studio. Supabase Demo App.
     </footer>
 
-    <!-- JS 연결 -->
+    <!-- Supabase JS 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 앱 코드 -->
     <script src="js/app.js"></script>
 </body>
 </html>

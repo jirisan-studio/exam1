@@ -1,11 +1,40 @@
+body {
+    margin: 0;
+    font-family: "Noto Sans KR", sans-serif;
+    background: #f7f7f7;
+}
+
+header {
+    background: #333;
+    color: white;
+    padding: 15px;
+}
+
+main {
+    padding: 20px;
+}
+
+input {
+    padding: 8px;
+    font-size: 16px;
+}
+
+button {
+    padding: 8px 15px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
 #todoList {
     list-style: none;
     padding: 0;
 }
 
 #todoList li {
+    background: white;
     padding: 10px;
-    border-bottom: 1px solid #ddd;
+    margin-bottom: 8px;
+    border-radius: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
