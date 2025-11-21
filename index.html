@@ -3,66 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>날씨 요약 표시</title>
+    <title>약국 정보 API 실습(XML)</title>
 
     <style>
-        .card {
-            max-width: 300px;
+        body {
+            font-family: "Noto Sans KR", sans-serif;
             padding: 20px;
-            border-radius: 15px;
-            background: #f5f5f5;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-top: 20px;
-            font-size: 18px;
+        }
+        .card {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             line-height: 1.6;
         }
         .title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 
 <body>
 
-    <h2>wttr.in 날씨 요약</h2>
-    <button id="btn">서울 날씨 불러오기</button>
+    <h2>전국 약국 정보 조회(XML API)</h2>
 
-    <div id="weatherCard"></div>
+    <input id="dong" type="text" placeholder="동 이름 입력 (예: 서초2동)" />
+    <button id="btn">조회</button>
+
+    <div id="list"></div>
 
     <script>
         const btn = document.getElementById("btn");
-        const card = document.getElementById("weatherCard");
+        const list = document.getElementById("list");
 
         btn.addEventListener("click", () => {
+            const dong = document.getElementById("dong").value.trim();
+            const API_KEY = "aefb2d81d98a261063b5a55e9928504fd246226dc34f474da0ffc56447df5e4a"; 
 
-            fetch("https://wttr.in/Seoul?format=j1")
-                .then(res => res.json())
-                .then(data => {
+            if (!dong) {
+                alert("동 이름을 입력하세요!");
+                return;
+            }
 
-                    const now = data.current_condition[0];
-                    const area = data.nearest_area[0].areaName[0].value;
-                    const country = data.nearest_area[0].country[0].value;
-                    const desc = now.weatherDesc[0].value;
+            const url = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyBasisList?serviceKey=${API_KEY}&pageNo=1&numOfRows=10&emdongNm=${encodeURI(dong)}`;
 
-                    // 카드 형태로 표시
-                    card.innerHTML = `
-                        <div class="card">
-                            <div class="title">${area}, ${country}</div>
-                            🌤 상태: ${desc}<br>
-                            🌡 기온: ${now.temp_C}℃<br>
-                            💧 습도: ${now.humidity}%<br>
-                            🌬 바람: ${now.windspeedKmph} km/h
-                        </div>
-                    `;
+            fetch(url)
+                .then(res => res.text())
+                .then(xmlText => {
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(xmlText, "text/xml");
+
+                    const items = xml.getElementsByTagName("item");
+                    list.innerHTML = "";
+
+                    for (let item of items) {
+                        const name = item.getElementsByTagName("yadmNm")[0]?.textContent;
+                        const addr = item.getElementsByTagName("addr")[0]?.textContent;
+                        const tel = item.getElementsByTagName("telno")[0]?.textContent;
+
+                        list.innerHTML += `
+                            <div class="card">
+                                <div class="title">${name}</div>
+                                주소: ${addr}<br>
+                                전화: ${tel}
+                            </div>
+                        `;
+                    }
                 })
                 .catch(err => {
-                    card.innerHTML = "오류 발생: " + err;
+                    list.innerHTML = "오류 발생: " + err;
                 });
-
         });
-
     </script>
 
 </body>
