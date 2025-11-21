@@ -17,7 +17,7 @@ body {
 header {
     background: #333;
     color: white;
-    padding: 15px 25px;
+    padding: 15px 40px; /* ← 여백 넓힘 */
     position: fixed;
     top: 0;
     left: 0;
@@ -31,7 +31,7 @@ header {
 
 nav a {
     color: white;
-    margin-left: 20px;
+    margin-left: 25px; /* ← 오른쪽 메뉴 간격 넓힘 */
     text-decoration: none;
     font-size: 15px;
 }
@@ -41,7 +41,7 @@ nav a:hover {
 }
 
 /* -----------------------------------
-   레이아웃
+   레이아웃 공통
 ----------------------------------- */
 .container {
     max-width: 900px;
@@ -65,7 +65,7 @@ section {
     margin-bottom: 40px;
 }
 
-/* 어두운 오버레이(텍스트 가독성 강화) */
+/* 어두운 오버레이 */
 .hero::before {
     content: "";
     position: absolute;
@@ -77,7 +77,7 @@ section {
     z-index: 1;
 }
 
-/* 오버레이 위에 텍스트 표시 */
+/* 오버레이 위 텍스트 */
 .hero h1,
 .hero p {
     position: relative;
@@ -91,18 +91,6 @@ section {
 
 .hero p {
     font-size: 20px;
-}
-
-/* -----------------------------------
-   Footer
------------------------------------ */
-footer {
-    background: #f1f1f1;
-    text-align: center;
-    padding: 15px;
-    margin-top: 50px;
-    font-size: 14px;
-    color: #555;
 }
 
 /* -----------------------------------
@@ -140,18 +128,28 @@ footer {
     background: #222;
 }
 
-
+/* -----------------------------------
+   Footer
+----------------------------------- */
+footer {
+    background: #f1f1f1;
+    text-align: center;
+    padding: 15px;
+    margin-top: 50px;
+    font-size: 14px;
+    color: #555;
+}
 
 /* -----------------------------------
-   반응형(모바일 대응)
+   반응형(모바일)
 ----------------------------------- */
 @media (max-width: 600px) {
     header {
-        padding: 12px 18px;
+        padding: 12px 20px; /* 모바일에서 조금 줄임 */
     }
 
     nav a {
-        margin-left: 12px;
+        margin-left: 15px;
         font-size: 14px;
     }
 
@@ -169,5 +167,9 @@ footer {
 
     .container {
         padding: 15px;
+    }
+
+    .section-card {
+        padding: 20px;
     }
 }
