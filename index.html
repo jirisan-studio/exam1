@@ -1,11 +1,16 @@
-<p id="msg">원래 문구입니다.</p>
-<button id="changeBtn">문구 바꾸기</button>
+<div id="box" class="blueBox"></div>
+<button id="toggle">색 바꾸기</button>
+
+<style>
+.blueBox { width: 100px; height: 100px; background: blue; }
+.redBox  { background: red; }
+</style>
 
 <script>
-    const text = document.getElementById("msg");
-    const btn = document.getElementById("changeBtn");
+    const box = document.getElementById("box");
+    const toggleBtn = document.getElementById("toggle");
 
-    btn.addEventListener("click", () => {
-        text.textContent = "문구가 변경되었습니다!";
+    toggleBtn.addEventListener("click", () => {
+        box.classList.toggle("redBox");
     });
 </script>
