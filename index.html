@@ -3,50 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>국가유산 검색 서비스</title>
+    <title>국가유산 지도 검색</title>
+    <!-- ✨ 네이버 지도 API 스크립트 추가 -->
+    <!-- YOUR_CLIENT_ID 부분에 네이버 클라우드에서 발급받은 ID를 꼭 넣으세요 -->
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=q9guv183ig"></script>
+    
     <style>
         body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
         h1 { text-align: center; color: #333; margin-bottom: 30px; }
         
-        /* 검색창 스타일 */
         .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
-        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #2c3e50; box-shadow: 0 0 5px rgba(44, 62, 80, 0.2); }
-        button { padding: 15px 30px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background-color: #34495e; }
+        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        button { padding: 15px 30px; font-size: 16px; background-color: #03c75a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #02b351; }
 
-        /* 리스트 스타일 */
         #result-area { display: flex; flex-direction: column; gap: 15px; }
-        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
-        .item:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); border-color: #2c3e50; }
-        .item-title { font-size: 1.3em; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; }
+        .item:hover { transform: translateY(-3px); border-color: #03c75a; }
+        .item-title { font-size: 1.3em; font-weight: bold; color: #333; margin-bottom: 8px; }
         .item-info { font-size: 0.95em; color: #7f8c8d; }
 
         /* 상세 정보 스타일 */
-        .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; animation: fadeIn 0.5s; }
-        .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .detail-desc { line-height: 1.7; color: #444; word-break: keep-all; }
+        .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; }
+        .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 15px; }
+        .detail-desc { line-height: 1.7; color: #444; margin-bottom: 15px; }
+        
+        /* ✨ 지도 스타일 추가 */
+        .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; }
         
         .loading { text-align: center; color: #888; padding: 20px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <h1>🏛️ 국가유산 상세 검색</h1>
+    <h1>🗺️ 국가유산 지도 검색</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="문화유산 이름 입력 (예: 경복궁, 첨성대, 숭례문)" onkeypress="if(event.keyCode==13) searchHeritage()">
+        <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) searchHeritage()">
         <button onclick="searchHeritage()">검색</button>
     </div>
 
     <div id="result-area"></div>
 
     <script>
-        // Vercel 파이썬 서버 주소 (수정 불필요)
         const PROXY_BASE = "/api/proxy?url=";
-        
-        // 국가유산청 API 주소
         const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
 
@@ -59,44 +59,38 @@
             resultArea.innerHTML = '<div class="loading">데이터를 불러오는 중입니다...</div>';
 
             try {
-                // 1. 목록 검색 요청
                 const targetUrl = `${LIST_URL}?ccbaMnm1=${encodeURIComponent(query)}`;
                 const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
                 const str = await response.text();
                 
-                // 2. XML 데이터 분석 (파싱)
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(str, "text/xml");
                 const items = xml.getElementsByTagName("item");
 
-                resultArea.innerHTML = ""; // 로딩 문구 제거
+                resultArea.innerHTML = "";
 
                 if (items.length === 0) {
                     resultArea.innerHTML = "<div class='loading'>검색 결과가 없습니다.</div>";
                     return;
                 }
 
-                // 3. 리스트 만들기
                 for (let item of items) {
-                    const name = item.getElementsByTagName("ccbaMnm1")[0].textContent; // 이름
-                    // 상세보기에 필요한 코드들 추출
+                    const name = item.getElementsByTagName("ccbaMnm1")[0].textContent;
                     const kdcd = item.getElementsByTagName("ccbaKdcd")[0].textContent;
                     const ctcd = item.getElementsByTagName("ccbaCtcd")[0].textContent;
                     const asno = item.getElementsByTagName("ccbaAsno")[0].textContent;
 
-                    // 화면에 박스 만들기
                     const div = document.createElement("div");
                     div.className = "item";
                     div.innerHTML = `
                         <div class="item-title">${name}</div>
-                        <div class="item-info">👆 눌러서 상세설명 보기</div>
+                        <div class="item-info">📍 눌러서 지도와 상세설명 보기</div>
                         <div class="detail-view" id="detail-${kdcd}-${asno}">로딩 중...</div>
                     `;
                     
-                    // 클릭하면 상세정보 가져오기
                     div.onclick = (e) => {
-                        // 이미지가 클릭된 게 아니면 토글 실행
-                        if(e.target.tagName !== 'IMG') {
+                        // 지도나 이미지를 클릭했을 때는 닫히지 않게 처리
+                        if(!e.target.closest('.detail-view')) {
                             toggleDetail(kdcd, ctcd, asno, div);
                         }
                     };
@@ -105,26 +99,23 @@
 
             } catch (error) {
                 console.error(error);
-                resultArea.innerHTML = "<div class='loading'>에러가 발생했습니다. (잠시 후 다시 시도해주세요)</div>";
+                resultArea.innerHTML = "<div class='loading'>에러가 발생했습니다.</div>";
             }
         }
 
         async function toggleDetail(kdcd, ctcd, asno, parentDiv) {
             const detailView = parentDiv.querySelector(".detail-view");
             
-            // 이미 열려있으면 닫기
             if (detailView.style.display === "block") {
                 detailView.style.display = "none";
                 return;
             }
-            
             detailView.style.display = "block";
 
-            // 이미 정보를 가져왔던 거라면 다시 로딩하지 않음
+            // 이미 로딩된 경우 재실행 방지 (지도 중복 생성 방지)
             if (detailView.getAttribute("data-loaded") === "true") return;
 
             try {
-                // 상세정보 API 요청
                 const targetUrl = `${DETAIL_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
                 const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
                 const str = await response.text();
@@ -132,21 +123,59 @@
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(str, "text/xml");
 
-                const content = xml.getElementsByTagName("content")[0]?.textContent || "상세 설명이 없습니다.";
+                const content = xml.getElementsByTagName("content")[0]?.textContent || "설명 없음";
                 const imgUrl = xml.getElementsByTagName("imageUrl")[0]?.textContent;
+                
+                // ✨ 좌표 가져오기 (API마다 태그 이름이 다를 수 있는데 보통 longitude, latitude입니다)
+                const lng = xml.getElementsByTagName("longitude")[0]?.textContent; // 경도 (X)
+                const lat = xml.getElementsByTagName("latitude")[0]?.textContent; // 위도 (Y)
 
                 let html = "";
-                if (imgUrl) {
-                    html += `<img src="${imgUrl}" class="detail-img" alt="문화유산 이미지"><br>`;
-                }
+                if (imgUrl) html += `<img src="${imgUrl}" class="detail-img"><br>`;
                 html += `<div class="detail-desc">${content}</div>`;
 
+                // ✨ 지도를 넣을 div 추가 (ID를 유니크하게 생성)
+                const mapId = `map-${kdcd}-${asno}`;
+                if (lat && lng && lat != "0" && lng != "0") {
+                    html += `<div id="${mapId}" class="map-container"></div>`;
+                } else {
+                    html += `<div style="color:#888; margin-top:10px;">(위치 정보가 없는 문화유산입니다)</div>`;
+                }
+
                 detailView.innerHTML = html;
-                detailView.setAttribute("data-loaded", "true"); // 로딩 완료 표시
+                detailView.setAttribute("data-loaded", "true");
+
+                // ✨ 지도 그리기 실행 (화면에 div가 생긴 직후 실행해야 함)
+                if (lat && lng && lat != "0" && lng != "0") {
+                    drawNaverMap(mapId, parseFloat(lat), parseFloat(lng));
+                }
 
             } catch (e) {
+                console.error(e);
                 detailView.innerHTML = "상세 정보를 가져올 수 없습니다.";
             }
+        }
+
+        // ✨ 네이버 지도 그리는 함수
+        function drawNaverMap(elementId, lat, lng) {
+            // 네이버 지도 객체가 로드되었는지 확인
+            if (typeof naver === "undefined") {
+                alert("네이버 지도 API 키를 확인해주세요.");
+                return;
+            }
+
+            const mapOptions = {
+                center: new naver.maps.LatLng(lat, lng), // 중심 좌표
+                zoom: 16 // 확대 레벨
+            };
+
+            const map = new naver.maps.Map(elementId, mapOptions);
+
+            // 마커 찍기
+            new naver.maps.Marker({
+                position: new naver.maps.LatLng(lat, lng),
+                map: map
+            });
         }
     </script>
 </body>
