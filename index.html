@@ -3,32 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>문화유산 검색</title>
+    <title>국가유산 검색 서비스</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        
+        /* 검색창 스타일 */
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #2c3e50; box-shadow: 0 0 5px rgba(44, 62, 80, 0.2); }
+        button { padding: 15px 30px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background-color: #34495e; }
+
+        /* 리스트 스타일 */
+        #result-area { display: flex; flex-direction: column; gap: 15px; }
+        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
+        .item:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); border-color: #2c3e50; }
+        .item-title { font-size: 1.3em; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .item-info { font-size: 0.95em; color: #7f8c8d; }
+
+        /* 상세 정보 스타일 */
+        .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; animation: fadeIn 0.5s; }
+        .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .detail-desc { line-height: 1.7; color: #444; word-break: keep-all; }
+        
+        .loading { text-align: center; color: #888; padding: 20px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
 </head>
 <body>
-    <h1>문화유산 검색기</h1>
-    <input type="text" id="searchInput" placeholder="예: 숭례문">
-    <button onclick="search()">검색</button>
-    <div id="result"></div>
+
+    <h1>🏛️ 국가유산 상세 검색</h1>
+    
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="문화유산 이름 입력 (예: 경복궁, 첨성대, 숭례문)" onkeypress="if(event.keyCode==13) searchHeritage()">
+        <button onclick="searchHeritage()">검색</button>
+    </div>
+
+    <div id="result-area"></div>
 
     <script>
-        async function search() {
-            const query = document.getElementById('searchInput').value;
-            const targetUrl = `http://www.khs.go.kr/cha/SearchKindOpenapiList.do?ccbaMnm1=${encodeURIComponent(query)}`;
-            
-            // 내 Vercel 서버의 주소 (배포되면 자동으로 연결됨)
-            const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+        // Vercel 파이썬 서버 주소 (수정 불필요)
+        const PROXY_BASE = "/api/proxy?url=";
+        
+        // 국가유산청 API 주소
+        const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
+        const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
 
-            document.getElementById('result').innerText = "로딩 중...";
+        async function searchHeritage() {
+            const query = document.getElementById('searchInput').value;
+            const resultArea = document.getElementById('result-area');
             
+            if(!query) { alert("검색어를 입력하세요."); return; }
+
+            resultArea.innerHTML = '<div class="loading">데이터를 불러오는 중입니다...</div>';
+
             try {
-                const response = await fetch(proxyUrl);
-                const text = await response.text();
+                // 1. 목록 검색 요청
+                const targetUrl = `${LIST_URL}?ccbaMnm1=${encodeURIComponent(query)}`;
+                const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
+                const str = await response.text();
                 
-                // 간단히 결과 텍스트만 보여주기 (XML 파싱 전 테스트)
-                document.getElementById('result').innerText = text.substring(0, 500) + "...";
+                // 2. XML 데이터 분석 (파싱)
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(str, "text/xml");
+                const items = xml.getElementsByTagName("item");
+
+                resultArea.innerHTML = ""; // 로딩 문구 제거
+
+                if (items.length === 0) {
+                    resultArea.innerHTML = "<div class='loading'>검색 결과가 없습니다.</div>";
+                    return;
+                }
+
+                // 3. 리스트 만들기
+                for (let item of items) {
+                    const name = item.getElementsByTagName("ccbaMnm1")[0].textContent; // 이름
+                    // 상세보기에 필요한 코드들 추출
+                    const kdcd = item.getElementsByTagName("ccbaKdcd")[0].textContent;
+                    const ctcd = item.getElementsByTagName("ccbaCtcd")[0].textContent;
+                    const asno = item.getElementsByTagName("ccbaAsno")[0].textContent;
+
+                    // 화면에 박스 만들기
+                    const div = document.createElement("div");
+                    div.className = "item";
+                    div.innerHTML = `
+                        <div class="item-title">${name}</div>
+                        <div class="item-info">👆 눌러서 상세설명 보기</div>
+                        <div class="detail-view" id="detail-${kdcd}-${asno}">로딩 중...</div>
+                    `;
+                    
+                    // 클릭하면 상세정보 가져오기
+                    div.onclick = (e) => {
+                        // 이미지가 클릭된 게 아니면 토글 실행
+                        if(e.target.tagName !== 'IMG') {
+                            toggleDetail(kdcd, ctcd, asno, div);
+                        }
+                    };
+                    resultArea.appendChild(div);
+                }
+
+            } catch (error) {
+                console.error(error);
+                resultArea.innerHTML = "<div class='loading'>에러가 발생했습니다. (잠시 후 다시 시도해주세요)</div>";
+            }
+        }
+
+        async function toggleDetail(kdcd, ctcd, asno, parentDiv) {
+            const detailView = parentDiv.querySelector(".detail-view");
+            
+            // 이미 열려있으면 닫기
+            if (detailView.style.display === "block") {
+                detailView.style.display = "none";
+                return;
+            }
+            
+            detailView.style.display = "block";
+
+            // 이미 정보를 가져왔던 거라면 다시 로딩하지 않음
+            if (detailView.getAttribute("data-loaded") === "true") return;
+
+            try {
+                // 상세정보 API 요청
+                const targetUrl = `${DETAIL_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
+                const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
+                const str = await response.text();
+                
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(str, "text/xml");
+
+                const content = xml.getElementsByTagName("content")[0]?.textContent || "상세 설명이 없습니다.";
+                const imgUrl = xml.getElementsByTagName("imageUrl")[0]?.textContent;
+
+                let html = "";
+                if (imgUrl) {
+                    html += `<img src="${imgUrl}" class="detail-img" alt="문화유산 이미지"><br>`;
+                }
+                html += `<div class="detail-desc">${content}</div>`;
+
+                detailView.innerHTML = html;
+                detailView.setAttribute("data-loaded", "true"); // 로딩 완료 표시
+
             } catch (e) {
-                document.getElementById('result').innerText = "에러 발생: " + e;
+                detailView.innerHTML = "상세 정보를 가져올 수 없습니다.";
             }
         }
     </script>
