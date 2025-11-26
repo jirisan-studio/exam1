@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
-    <!-- ✨ 네이버 지도 API 스크립트 추가 -->
-    <!-- YOUR_CLIENT_ID 부분에 네이버 클라우드에서 발급받은 ID를 꼭 넣으세요 -->
+    
+    <!-- ✨ [핵심 해결책] 네이버에게 주소 정보를 강제로 보내주는 태그 (지도 에러 해결용) -->
+    <meta name="referrer" content="origin">
+
+    <!-- 네이버 지도 API -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=q9guv183ig"></script>
     
     <style>
@@ -18,9 +21,17 @@
         button:hover { background-color: #02b351; }
 
         #result-area { display: flex; flex-direction: column; gap: 15px; }
-        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; }
+        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
         .item:hover { transform: translateY(-3px); border-color: #03c75a; }
-        .item-title { font-size: 1.3em; font-weight: bold; color: #333; margin-bottom: 8px; }
+        
+        .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        /* ✨ 국보/보물 뱃지 스타일 */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #666; }
+        .badge.국보 { background-color: #d35400; } /* 국보는 주황색 */
+        .badge.보물 { background-color: #2980b9; } /* 보물은 파란색 */
+        .badge.사적 { background-color: #27ae60; } /* 사적은 초록색 */
+        
+        .item-title { font-size: 1.3em; font-weight: bold; color: #333; }
         .item-info { font-size: 0.95em; color: #7f8c8d; }
 
         /* 상세 정보 스타일 */
@@ -28,7 +39,6 @@
         .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 15px; }
         .detail-desc { line-height: 1.7; color: #444; margin-bottom: 15px; }
         
-        /* ✨ 지도 스타일 추가 */
         .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; }
         
         .loading { text-align: center; color: #888; padding: 20px; }
@@ -75,21 +85,27 @@
                 }
 
                 for (let item of items) {
-                    const name = item.getElementsByTagName("ccbaMnm1")[0].textContent;
+                    const name = item.getElementsByTagName("ccbaMnm1")[0].textContent; // 이름
+                    const type = item.getElementsByTagName("ccmaName")[0].textContent; // ✨ 국보/보물 구분
+                    
                     const kdcd = item.getElementsByTagName("ccbaKdcd")[0].textContent;
                     const ctcd = item.getElementsByTagName("ccbaCtcd")[0].textContent;
                     const asno = item.getElementsByTagName("ccbaAsno")[0].textContent;
 
                     const div = document.createElement("div");
                     div.className = "item";
+                    
+                    // ✨ 제목 부분에 뱃지 추가
                     div.innerHTML = `
-                        <div class="item-title">${name}</div>
+                        <div class="item-header">
+                            <span class="badge ${type}">${type}</span>
+                            <span class="item-title">${name}</span>
+                        </div>
                         <div class="item-info">📍 눌러서 지도와 상세설명 보기</div>
                         <div class="detail-view" id="detail-${kdcd}-${asno}">로딩 중...</div>
                     `;
                     
                     div.onclick = (e) => {
-                        // 지도나 이미지를 클릭했을 때는 닫히지 않게 처리
                         if(!e.target.closest('.detail-view')) {
                             toggleDetail(kdcd, ctcd, asno, div);
                         }
@@ -112,7 +128,6 @@
             }
             detailView.style.display = "block";
 
-            // 이미 로딩된 경우 재실행 방지 (지도 중복 생성 방지)
             if (detailView.getAttribute("data-loaded") === "true") return;
 
             try {
@@ -126,15 +141,13 @@
                 const content = xml.getElementsByTagName("content")[0]?.textContent || "설명 없음";
                 const imgUrl = xml.getElementsByTagName("imageUrl")[0]?.textContent;
                 
-                // ✨ 좌표 가져오기 (API마다 태그 이름이 다를 수 있는데 보통 longitude, latitude입니다)
-                const lng = xml.getElementsByTagName("longitude")[0]?.textContent; // 경도 (X)
-                const lat = xml.getElementsByTagName("latitude")[0]?.textContent; // 위도 (Y)
+                const lng = xml.getElementsByTagName("longitude")[0]?.textContent;
+                const lat = xml.getElementsByTagName("latitude")[0]?.textContent;
 
                 let html = "";
                 if (imgUrl) html += `<img src="${imgUrl}" class="detail-img"><br>`;
                 html += `<div class="detail-desc">${content}</div>`;
 
-                // ✨ 지도를 넣을 div 추가 (ID를 유니크하게 생성)
                 const mapId = `map-${kdcd}-${asno}`;
                 if (lat && lng && lat != "0" && lng != "0") {
                     html += `<div id="${mapId}" class="map-container"></div>`;
@@ -145,7 +158,6 @@
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
 
-                // ✨ 지도 그리기 실행 (화면에 div가 생긴 직후 실행해야 함)
                 if (lat && lng && lat != "0" && lng != "0") {
                     drawNaverMap(mapId, parseFloat(lat), parseFloat(lng));
                 }
@@ -156,22 +168,19 @@
             }
         }
 
-        // ✨ 네이버 지도 그리는 함수
         function drawNaverMap(elementId, lat, lng) {
-            // 네이버 지도 객체가 로드되었는지 확인
             if (typeof naver === "undefined") {
-                alert("네이버 지도 API 키를 확인해주세요.");
+                // 아직 스크립트가 로드 안 됐거나 에러 상황
+                const el = document.getElementById(elementId);
+                el.innerHTML = "<div style='padding:20px; text-align:center;'>지도를 불러오지 못했습니다.<br>(API 설정 확인 필요)</div>";
                 return;
             }
 
             const mapOptions = {
-                center: new naver.maps.LatLng(lat, lng), // 중심 좌표
-                zoom: 16 // 확대 레벨
+                center: new naver.maps.LatLng(lat, lng),
+                zoom: 16
             };
-
             const map = new naver.maps.Map(elementId, mapOptions);
-
-            // 마커 찍기
             new naver.maps.Marker({
                 position: new naver.maps.LatLng(lat, lng),
                 map: map
