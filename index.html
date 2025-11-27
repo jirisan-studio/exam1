@@ -109,14 +109,13 @@
         <button class="search-btn" onclick="resetAndSearch()">검색</button>
     </div>
 
-    <!-- 필터 탭 -->
     <div id="filter-area" class="filter-container"></div>
 
     <div id="result-area"></div>
     
     <button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">결과 더보기 +</button>
 
-    <!-- ✨ 하단으로 이동한 관련 사이트 섹션 -->
+    <!-- 하단 관련 사이트 섹션 -->
     <div class="related-section">
         <h3 class="related-title">관련 사이트</h3>
         <div class="quick-links">
@@ -157,6 +156,7 @@
         let currentState = { query: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
 
+        // 모든 종목 코드 포함
         const CATEGORIES = [
             { code: "", name: "전체" },
             { code: "11", name: "국보" },
@@ -226,7 +226,6 @@
                         const activeClass = item.code === "" ? "active" : "";
                         let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
                         if(item.name === "전체") displayName = "전체";
-                        
                         html += `<button class="filter-btn ${activeClass}" onclick="applyFilter(this, '${item.code}')">${displayName} (${item.count})</button>`;
                     }
                 });
@@ -393,6 +392,7 @@
                     html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img">`;
                 }
 
+                // 갤러리 위치
                 html += `<div id="gallery-${kdcd}-${asno}" class="gallery-container"></div>`;
                 html += `<div class="detail-desc">${formatText(content)}</div>`;
 
@@ -419,8 +419,8 @@
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
                 
-                // ✨ [수정됨] 사진 최대 50장 + 설명 가져오기
-                loadGalleryImages(kdcd, ctcd, asno);
+                // ✨ [수정됨] 오직 '이름'으로만 검색하여 풍성한 갤러리 확보
+                loadGalleryImages(name, kdcd, asno);
 
             } catch (e) {
                 console.error(e);
@@ -428,10 +428,11 @@
             }
         }
 
-        // ✨ [수정됨] 갤러리 이미지 로드 (50장 + 툴팁)
-        async function loadGalleryImages(kdcd, ctcd, asno) {
+        // ✨ [수정됨] 이름 기반 이미지 검색
+        async function loadGalleryImages(name, kdcd, asno) {
             try {
-                const url = `${IMAGE_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}&pageUnit=50`;
+                // ID 조건은 모두 제거하고 이름(ccbaMnm1)만 사용
+                const url = `${IMAGE_URL}?ccbaMnm1=${encodeURIComponent(name)}&pageUnit=50`;
                 const response = await fetch(PROXY_BASE + encodeURIComponent(url));
                 const str = await response.text();
                 const xml = new DOMParser().parseFromString(str, "text/xml");
