@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
-    <!-- 지도 인증 에러 방지용 태그 -->
     <meta name="referrer" content="origin">
-
-    <!-- 네이버 지도 API (신규 ID: an3gqg9xly / 파라미터: ncpKeyId) -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
     
     <style>
@@ -23,7 +20,7 @@
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
 
-        /* ✨ 관련 사이트 바로가기 (Quick Links) */
+        /* 관련 사이트 바로가기 */
         .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; margin-bottom: 25px; }
         .link-card { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .link-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #2c3e50; color: #2c3e50; }
@@ -35,7 +32,6 @@
         .filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
         .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
         
-        /* 즐겨찾기 버튼 스타일 */
         .filter-btn.fav-btn { color: #f39c12; border-color: #f39c12; }
         .filter-btn.fav-btn.active { background-color: #f39c12; color: white; }
 
@@ -44,7 +40,6 @@
         .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; position: relative; }
         .item:hover { transform: translateY(-3px); border-color: #2c3e50; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
-        /* 리스트 헤더 */
         .item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
         .badge.국보 { background-color: #d35400; }
@@ -55,16 +50,13 @@
         .item-title { font-size: 1.25em; font-weight: bold; color: #2c3e50; cursor: pointer; flex: 1; }
         .item-info { font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px; cursor: pointer; }
 
-        /* 상세 정보 영역 */
         .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 상세 상단 (즐겨찾기 버튼 포함) */
         .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .fav-star { font-size: 1.5em; cursor: pointer; color: #ddd; transition: 0.2s; }
         .fav-star.active { color: #f39c12; transform: scale(1.2); }
 
-        /* 통합 요약 테이블 */
         .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95em; }
         .summary-table th { background: #f1f3f5; color: #555; padding: 12px 10px; border: 1px solid #e9ecef; text-align: center; width: 22%; white-space: nowrap; font-weight: 600; }
         .summary-table td { padding: 12px 10px; border: 1px solid #e9ecef; color: #333; }
@@ -72,7 +64,6 @@
         .detail-desc { line-height: 1.8; color: #444; font-size: 1em; word-break: keep-all; margin-bottom: 20px; }
         .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 20px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-        /* 갤러리 영역 */
         .gallery-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
         .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
         .gallery-img:hover { border-color: #2c3e50; }
@@ -80,7 +71,6 @@
         .map-wrapper { margin-top: 20px; }
         .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; }
 
-        /* 버튼 스타일 */
         .action-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 0.95em; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-map { background-color: #2c3e50; color: white; border: none; }
         .btn-map:hover { background-color: #1a252f; }
@@ -103,12 +93,10 @@
     <h1 onclick="window.location.href=window.location.pathname">🏛️ 국가유산 지도 검색</h1>
     
     <div class="search-box">
-        <!-- ✨ 1. 예시 문구 수정 완료 -->
         <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) resetAndSearch()">
         <button class="search-btn" onclick="resetAndSearch()">검색</button>
     </div>
 
-    <!-- ✨ 2. 관련 사이트 바로가기 (국립공원공단 포함) -->
     <div class="quick-links">
         <a href="https://www.khs.go.kr" target="_blank" class="link-card">
             <span class="link-icon">🏛️</span>
@@ -132,7 +120,6 @@
         </a>
     </div>
 
-    <!-- 필터 탭 -->
     <div id="filter-area" class="filter-container"></div>
 
     <div id="result-area"></div>
@@ -151,25 +138,33 @@
         const IMAGE_URL = "http://www.khs.go.kr/cha/SearchImageOpenapi.do";
 
         let currentState = { query: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
-        
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
 
+        // ✨ [핵심 수정] 모든 종목 코드를 다 넣었습니다.
         const CATEGORIES = [
             { code: "", name: "전체" },
             { code: "11", name: "국보" },
             { code: "12", name: "보물" },
             { code: "13", name: "사적" },
+            { code: "14", name: "사적및명승" },
+            { code: "15", name: "명승" },
             { code: "16", name: "천연기념물" },
             { code: "17", name: "국가민속" },
-            { code: "18", name: "국가무형" }
+            { code: "18", name: "국가무형" },
+            { code: "79", name: "국가등록" },
+            { code: "21", name: "시도유형" },
+            { code: "22", name: "시도무형" },
+            { code: "23", name: "시도기념물" },
+            { code: "24", name: "시도민속" },
+            { code: "25", name: "시도등록" },
+            { code: "31", name: "문화유산자료" },
+            { code: "80", name: "이북5도" }
         ];
 
         window.onload = function() {
             const params = new URLSearchParams(window.location.search);
             const sharedQuery = params.get('q');
-            
             createFilterTabs(""); 
-
             if (sharedQuery) {
                 document.getElementById('searchInput').value = sharedQuery;
                 resetAndSearch();
@@ -187,7 +182,6 @@
             document.getElementById('result-area').innerHTML = '<div class="loading">데이터를 조회 중입니다...</div>';
             document.getElementById('loadMoreBtn').style.display = 'none';
 
-            // 검색 시작 시 바로가기 메뉴는 숨기지 않고 그대로 둡니다 (화면 구성상 유지하는게 더 예쁨)
             await createFilterTabs(query);
             await loadList();
         }
@@ -214,7 +208,11 @@
                 results.forEach((item) => {
                     if (item.count > 0) {
                         const activeClass = item.code === "" ? "active" : "";
-                        html += `<button class="filter-btn ${activeClass}" onclick="applyFilter(this, '${item.code}')">${item.name} (${item.count})</button>`;
+                        // 버튼 이름이 너무 길어지지 않게 일부 줄임말 적용 (화면 깨짐 방지)
+                        let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
+                        if(item.name === "전체") displayName = "전체";
+                        
+                        html += `<button class="filter-btn ${activeClass}" onclick="applyFilter(this, '${item.code}')">${displayName} (${item.count})</button>`;
                     }
                 });
             }
@@ -234,7 +232,6 @@
         function showFavorites() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('.fav-btn').classList.add('active');
-            
             const resultArea = document.getElementById('result-area');
             document.getElementById('loadMoreBtn').style.display = 'none';
             resultArea.innerHTML = "";
