@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
+    <!-- 지도 인증 에러 방지용 태그 -->
     <meta name="referrer" content="origin">
+
+    <!-- 네이버 지도 API (신규 ID: an3gqg9xly / 파라미터: ncpKeyId) -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
     
     <style>
@@ -19,6 +22,12 @@
         input:focus { border-color: #2c3e50; }
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
+
+        /* ✨ 관련 사이트 바로가기 (Quick Links) */
+        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; margin-bottom: 25px; }
+        .link-card { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .link-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #2c3e50; color: #2c3e50; }
+        .link-icon { font-size: 1.8em; margin-bottom: 2px; }
 
         /* 필터 탭 */
         .filter-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
@@ -35,6 +44,7 @@
         .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; position: relative; }
         .item:hover { transform: translateY(-3px); border-color: #2c3e50; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
+        /* 리스트 헤더 */
         .item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
         .badge.국보 { background-color: #d35400; }
@@ -93,8 +103,33 @@
     <h1 onclick="window.location.href=window.location.pathname">🏛️ 국가유산 지도 검색</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) resetAndSearch()">
+        <!-- ✨ 1. 예시 문구 수정 완료 -->
+        <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) resetAndSearch()">
         <button class="search-btn" onclick="resetAndSearch()">검색</button>
+    </div>
+
+    <!-- ✨ 2. 관련 사이트 바로가기 (국립공원공단 포함) -->
+    <div class="quick-links">
+        <a href="https://www.khs.go.kr" target="_blank" class="link-card">
+            <span class="link-icon">🏛️</span>
+            <span>국가유산청</span>
+        </a>
+        <a href="https://www.heritage.go.kr" target="_blank" class="link-card">
+            <span class="link-icon">🌏</span>
+            <span>국가유산포털</span>
+        </a>
+        <a href="https://www.knps.or.kr" target="_blank" class="link-card">
+            <span class="link-icon">🏞️</span>
+            <span>국립공원공단</span>
+        </a>
+        <a href="https://www.museum.go.kr" target="_blank" class="link-card">
+            <span class="link-icon">🏺</span>
+            <span>국립중앙박물관</span>
+        </a>
+        <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card">
+            <span class="link-icon">✈️</span>
+            <span>구석구석</span>
+        </a>
     </div>
 
     <!-- 필터 탭 -->
@@ -117,7 +152,6 @@
 
         let currentState = { query: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
         
-        // 즐겨찾기 데이터 (로컬 스토리지 사용)
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
 
         const CATEGORIES = [
@@ -130,12 +164,10 @@
             { code: "18", name: "국가무형" }
         ];
 
-        // 페이지 로드 시 공유된 링크인지 확인
         window.onload = function() {
             const params = new URLSearchParams(window.location.search);
             const sharedQuery = params.get('q');
             
-            // 즐겨찾기 버튼을 필터에 추가하기 위해 초기화 호출
             createFilterTabs(""); 
 
             if (sharedQuery) {
@@ -148,7 +180,6 @@
             const query = document.getElementById('searchInput').value.trim();
             if (!query) { alert("검색어를 입력하세요."); return; }
 
-            // URL 주소 업데이트 (공유하기 좋게)
             const newUrl = window.location.pathname + '?q=' + encodeURIComponent(query);
             window.history.pushState({ path: newUrl }, '', newUrl);
 
@@ -156,6 +187,7 @@
             document.getElementById('result-area').innerHTML = '<div class="loading">데이터를 조회 중입니다...</div>';
             document.getElementById('loadMoreBtn').style.display = 'none';
 
+            // 검색 시작 시 바로가기 메뉴는 숨기지 않고 그대로 둡니다 (화면 구성상 유지하는게 더 예쁨)
             await createFilterTabs(query);
             await loadList();
         }
@@ -164,10 +196,8 @@
             const filterArea = document.getElementById('filter-area');
             let html = "";
 
-            // 1. 즐겨찾기 버튼 항상 표시
             html += `<button class="filter-btn fav-btn" onclick="showFavorites()">⭐ 즐겨찾기 (${favorites.length})</button>`;
 
-            // 2. 검색어가 있을 때만 카테고리 계산
             if(query) {
                 const promises = CATEGORIES.map(async (cat) => {
                     const url = `${LIST_URL}?ccbaMnm1=${encodeURIComponent(query)}&ccbaKdcd=${cat.code}&pageUnit=1`;
@@ -201,7 +231,6 @@
             loadList();
         }
 
-        // 즐겨찾기 목록 보기
         function showFavorites() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('.fav-btn').classList.add('active');
@@ -215,7 +244,6 @@
                 return;
             }
 
-            // 즐겨찾기는 저장된 데이터를 기반으로 리스트 생성
             favorites.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "item";
@@ -323,7 +351,6 @@
                 const name = xml.getElementsByTagName("ccbaMnm1")[0]?.textContent;
                 const type = xml.getElementsByTagName("ccmaName")[0]?.textContent || "";
 
-                // 요약 정보
                 const gcode = xml.getElementsByTagName("gcodeName")[0]?.textContent || "-"; 
                 const quan = xml.getElementsByTagName("ccbaQuan")[0]?.textContent || "-"; 
                 let date = xml.getElementsByTagName("ccbaAsdt")[0]?.textContent || "-"; 
@@ -334,11 +361,9 @@
 
                 if(date.length === 8) date = `${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}`;
 
-                // 즐겨찾기 상태 확인
                 const isFav = favorites.some(f => f.kdcd === kdcd && f.asno === asno);
                 const starClass = isFav ? "active" : "";
 
-                // HTML 조립
                 let html = `
                     <div class="detail-header">
                         <span></span>
@@ -356,9 +381,7 @@
                     html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img">`;
                 }
 
-                // 갤러리 영역 (이미지 검색 API)
                 html += `<div id="gallery-${kdcd}-${asno}" class="gallery-container"></div>`;
-
                 html += `<div class="detail-desc">${formatText(content)}</div>`;
 
                 const mapId = `map-${kdcd}-${asno}`;
@@ -373,7 +396,6 @@
                     `;
                 }
 
-                // 외부 검색 및 공유 버튼
                 html += `
                     <div class="external-links">
                         <button class="action-btn btn-external" onclick="window.open('https://www.google.com/search?q=${name}')">G 구글 검색</button>
@@ -384,8 +406,6 @@
 
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
-
-                // 갤러리 이미지 로드 호출
                 loadGalleryImages(kdcd, ctcd, asno);
 
             } catch (e) {
@@ -394,7 +414,6 @@
             }
         }
 
-        // 이미지 검색 API 호출 (갤러리)
         async function loadGalleryImages(kdcd, ctcd, asno) {
             try {
                 const url = `${IMAGE_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
@@ -410,7 +429,6 @@
                 }
 
                 let imgHtml = "";
-                // 최대 10장까지만 표시
                 for(let i=0; i<Math.min(items.length, 10); i++) {
                     const imgUrl = items[i].getElementsByTagName("imageUrl")[0]?.textContent;
                     if(imgUrl) {
@@ -423,37 +441,25 @@
                 } else {
                     galleryDiv.style.display = 'none';
                 }
-
-            } catch(e) {
-                console.log("Gallery load failed");
-            }
+            } catch(e) { console.log("Gallery load failed"); }
         }
 
-        // 즐겨찾기 토글
         function toggleFavorite(kdcd, ctcd, asno, name, type, icon) {
             const index = favorites.findIndex(f => f.kdcd === kdcd && f.asno === asno);
-            
             if (index === -1) {
-                // 추가
                 favorites.push({ kdcd, ctcd, asno, name, type });
                 icon.classList.add('active');
                 alert("⭐ 즐겨찾기에 추가되었습니다!");
             } else {
-                // 삭제
                 favorites.splice(index, 1);
                 icon.classList.remove('active');
                 alert("즐겨찾기가 해제되었습니다.");
             }
-            
-            // 로컬 스토리지 저장
             localStorage.setItem('myHeritageFavs', JSON.stringify(favorites));
-            
-            // 버튼 텍스트 업데이트 (메인화면인 경우)
             const favBtn = document.querySelector('.fav-btn');
             if(favBtn) favBtn.innerText = `⭐ 즐겨찾기 (${favorites.length})`;
         }
 
-        // 링크 복사
         function shareLink(name) {
             const url = window.location.href;
             navigator.clipboard.writeText(url).then(() => {
