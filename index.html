@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
+    <!-- 지도 인증 에러 방지용 태그 -->
     <meta name="referrer" content="origin">
+
+    <!-- 네이버 지도 API (신규 ID: an3gqg9xly) -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
     
     <style>
         /* 기본 설정 */
-        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 120px; box-sizing: border-box; color: #333; }
+        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 150px; box-sizing: border-box; color: #333; }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; letter-spacing: -1px; cursor: pointer; }
         
         /* 검색창 */
@@ -20,18 +23,13 @@
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
 
-        /* 관련 사이트 바로가기 */
-        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; margin-bottom: 25px; }
-        .link-card { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .link-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #2c3e50; color: #2c3e50; }
-        .link-icon { font-size: 1.8em; margin-bottom: 2px; }
-
         /* 필터 탭 */
         .filter-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
         .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
         
+        /* 즐겨찾기 버튼 스타일 */
         .filter-btn.fav-btn { color: #f39c12; border-color: #f39c12; }
         .filter-btn.fav-btn.active { background-color: #f39c12; color: white; }
 
@@ -40,6 +38,7 @@
         .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; position: relative; }
         .item:hover { transform: translateY(-3px); border-color: #2c3e50; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
+        /* 리스트 헤더 */
         .item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
         .badge.국보 { background-color: #d35400; }
@@ -50,13 +49,16 @@
         .item-title { font-size: 1.25em; font-weight: bold; color: #2c3e50; cursor: pointer; flex: 1; }
         .item-info { font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px; cursor: pointer; }
 
+        /* 상세 정보 영역 */
         .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        /* 상세 상단 (즐겨찾기 버튼 포함) */
         .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .fav-star { font-size: 1.5em; cursor: pointer; color: #ddd; transition: 0.2s; }
         .fav-star.active { color: #f39c12; transform: scale(1.2); }
 
+        /* 통합 요약 테이블 */
         .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95em; }
         .summary-table th { background: #f1f3f5; color: #555; padding: 12px 10px; border: 1px solid #e9ecef; text-align: center; width: 22%; white-space: nowrap; font-weight: 600; }
         .summary-table td { padding: 12px 10px; border: 1px solid #e9ecef; color: #333; }
@@ -64,13 +66,15 @@
         .detail-desc { line-height: 1.8; color: #444; font-size: 1em; word-break: keep-all; margin-bottom: 20px; }
         .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 20px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
+        /* 갤러리 영역 */
         .gallery-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
-        .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
         .gallery-img:hover { border-color: #2c3e50; }
 
         .map-wrapper { margin-top: 20px; }
         .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; }
 
+        /* 버튼 스타일 */
         .action-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 0.95em; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-map { background-color: #2c3e50; color: white; border: none; }
         .btn-map:hover { background-color: #1a252f; }
@@ -82,9 +86,17 @@
         .load-more-btn { width: 100%; padding: 15px; margin-top: 20px; background: white; border: 1px solid #ddd; border-radius: 8px; color: #555; font-size: 1em; cursor: pointer; font-weight: bold; display: none; }
         .load-more-btn:hover { background: #f9f9f9; color: #333; }
 
+        /* 하단 관련 사이트 섹션 */
+        .related-section { margin-top: 60px; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .related-title { font-size: 1em; color: #7f8c8d; margin-bottom: 15px; text-align: center; font-weight: normal; }
+        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+        .link-card { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .link-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #2c3e50; color: #2c3e50; }
+        .link-icon { font-size: 1.8em; margin-bottom: 2px; }
+
         .loading { text-align: center; color: #888; padding: 30px; }
         
-        .footer { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
         .footer a { color: #888; text-decoration: none; border-bottom: 1px dotted #888; }
     </style>
 </head>
@@ -97,34 +109,39 @@
         <button class="search-btn" onclick="resetAndSearch()">검색</button>
     </div>
 
-    <div class="quick-links">
-        <a href="https://www.khs.go.kr" target="_blank" class="link-card">
-            <span class="link-icon">🏛️</span>
-            <span>국가유산청</span>
-        </a>
-        <a href="https://www.heritage.go.kr" target="_blank" class="link-card">
-            <span class="link-icon">🌏</span>
-            <span>국가유산포털</span>
-        </a>
-        <a href="https://www.knps.or.kr" target="_blank" class="link-card">
-            <span class="link-icon">🏞️</span>
-            <span>국립공원공단</span>
-        </a>
-        <a href="https://www.museum.go.kr" target="_blank" class="link-card">
-            <span class="link-icon">🏺</span>
-            <span>국립중앙박물관</span>
-        </a>
-        <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card">
-            <span class="link-icon">✈️</span>
-            <span>구석구석</span>
-        </a>
-    </div>
-
+    <!-- 필터 탭 -->
     <div id="filter-area" class="filter-container"></div>
 
     <div id="result-area"></div>
     
     <button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">결과 더보기 +</button>
+
+    <!-- ✨ 하단으로 이동한 관련 사이트 섹션 -->
+    <div class="related-section">
+        <h3 class="related-title">관련 사이트</h3>
+        <div class="quick-links">
+            <a href="https://www.khs.go.kr" target="_blank" class="link-card">
+                <span class="link-icon">🏛️</span>
+                <span>국가유산청</span>
+            </a>
+            <a href="https://www.heritage.go.kr" target="_blank" class="link-card">
+                <span class="link-icon">🌏</span>
+                <span>국가유산포털</span>
+            </a>
+            <a href="https://www.knps.or.kr" target="_blank" class="link-card">
+                <span class="link-icon">🏞️</span>
+                <span>국립공원공단</span>
+            </a>
+            <a href="https://www.museum.go.kr" target="_blank" class="link-card">
+                <span class="link-icon">🏺</span>
+                <span>국립중앙박물관</span>
+            </a>
+            <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card">
+                <span class="link-icon">✈️</span>
+                <span>구석구석</span>
+            </a>
+        </div>
+    </div>
 
     <div class="footer">
         이 사이트는 국가유산청(<a href="https://www.khs.go.kr" target="_blank">https://www.khs.go.kr</a>)의 오픈API를 이용해서 만들었습니다.<br>
@@ -140,7 +157,6 @@
         let currentState = { query: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
 
-        // ✨ [핵심 수정] 모든 종목 코드를 다 넣었습니다.
         const CATEGORIES = [
             { code: "", name: "전체" },
             { code: "11", name: "국보" },
@@ -208,7 +224,6 @@
                 results.forEach((item) => {
                     if (item.count > 0) {
                         const activeClass = item.code === "" ? "active" : "";
-                        // 버튼 이름이 너무 길어지지 않게 일부 줄임말 적용 (화면 깨짐 방지)
                         let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
                         if(item.name === "전체") displayName = "전체";
                         
@@ -403,6 +418,8 @@
 
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
+                
+                // ✨ [수정됨] 사진 최대 50장 + 설명 가져오기
                 loadGalleryImages(kdcd, ctcd, asno);
 
             } catch (e) {
@@ -411,9 +428,10 @@
             }
         }
 
+        // ✨ [수정됨] 갤러리 이미지 로드 (50장 + 툴팁)
         async function loadGalleryImages(kdcd, ctcd, asno) {
             try {
-                const url = `${IMAGE_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
+                const url = `${IMAGE_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}&pageUnit=50`;
                 const response = await fetch(PROXY_BASE + encodeURIComponent(url));
                 const str = await response.text();
                 const xml = new DOMParser().parseFromString(str, "text/xml");
@@ -426,15 +444,18 @@
                 }
 
                 let imgHtml = "";
-                for(let i=0; i<Math.min(items.length, 10); i++) {
+                for(let i=0; i < items.length; i++) {
                     const imgUrl = items[i].getElementsByTagName("imageUrl")[0]?.textContent;
+                    const imgDesc = items[i].getElementsByTagName("ccimDesc")[0]?.textContent || "이미지";
+
                     if(imgUrl) {
-                         imgHtml += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="gallery-img" onclick="window.open('${imgUrl}')">`;
+                         imgHtml += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="gallery-img" title="${imgDesc}" onclick="window.open('${imgUrl}')">`;
                     }
                 }
                 
                 if(imgHtml) {
                     galleryDiv.innerHTML = imgHtml;
+                    galleryDiv.style.display = 'flex';
                 } else {
                     galleryDiv.style.display = 'none';
                 }
