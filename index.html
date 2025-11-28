@@ -8,28 +8,47 @@
     <!-- 지도 인증 에러 방지용 태그 -->
     <meta name="referrer" content="origin">
 
-    <!-- 네이버 지도 API (신규 ID: an3gqg9xly) -->
+    <!-- 네이버 지도 API (신규 ID 적용됨) -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
     
     <style>
         /* 기본 설정 */
-        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 150px; box-sizing: border-box; color: #333; }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; letter-spacing: -1px; cursor: pointer; }
+        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 160px; box-sizing: border-box; color: #333; }
         
-        /* 검색창 */
+        /* 3. 모바일 여백 최적화 (600px 이하에서 여백 줄임) */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+        }
+
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; letter-spacing: -1px; cursor: pointer; }
+        
+        /* 검색 모드 탭 (이름 vs 지역) */
+        .mode-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .mode-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #888; background: none; border: none; font-size: 1.1em; transition: 0.2s; }
+        .mode-tab.active { color: #2c3e50; border-bottom: 3px solid #2c3e50; margin-bottom: -2px; }
+
+        /* 검색창 영역 */
+        .search-container { display: none; }
+        .search-container.active { display: block; }
+
+        /* 이름 검색창 */
         .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
         input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         input:focus { border-color: #2c3e50; }
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
 
+        /* 4. 지역 선택 그리드 */
+        .region-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .region-btn { padding: 12px 5px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 0.95em; color: #555; transition: 0.2s; font-weight: 500; }
+        .region-btn:hover { border-color: #2c3e50; color: #2c3e50; background: #f9f9f9; }
+        .region-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
+
         /* 필터 탭 */
         .filter-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
         .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
-        
-        /* 즐겨찾기 버튼 스타일 */
         .filter-btn.fav-btn { color: #f39c12; border-color: #f39c12; }
         .filter-btn.fav-btn.active { background-color: #f39c12; color: white; }
 
@@ -38,7 +57,6 @@
         .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; position: relative; }
         .item:hover { transform: translateY(-3px); border-color: #2c3e50; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
-        /* 리스트 헤더 */
         .item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
         .badge.국보 { background-color: #d35400; }
@@ -53,12 +71,10 @@
         .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 상세 상단 (즐겨찾기 버튼 포함) */
         .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .fav-star { font-size: 1.5em; cursor: pointer; color: #ddd; transition: 0.2s; }
         .fav-star.active { color: #f39c12; transform: scale(1.2); }
 
-        /* 통합 요약 테이블 */
         .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95em; }
         .summary-table th { background: #f1f3f5; color: #555; padding: 12px 10px; border: 1px solid #e9ecef; text-align: center; width: 22%; white-space: nowrap; font-weight: 600; }
         .summary-table td { padding: 12px 10px; border: 1px solid #e9ecef; color: #333; }
@@ -66,15 +82,9 @@
         .detail-desc { line-height: 1.8; color: #444; font-size: 1em; word-break: keep-all; margin-bottom: 20px; }
         .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 20px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-        /* 갤러리 영역 */
-        .gallery-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
-        .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
-        .gallery-img:hover { border-color: #2c3e50; }
-
         .map-wrapper { margin-top: 20px; }
         .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; }
 
-        /* 버튼 스타일 */
         .action-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 0.95em; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-map { background-color: #2c3e50; color: white; border: none; }
         .btn-map:hover { background-color: #1a252f; }
@@ -89,28 +99,47 @@
         /* 하단 관련 사이트 섹션 */
         .related-section { margin-top: 60px; padding-top: 20px; border-top: 1px dashed #ddd; }
         .related-title { font-size: 1em; color: #7f8c8d; margin-bottom: 15px; text-align: center; font-weight: normal; }
-        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; }
         .link-card { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .link-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #2c3e50; color: #2c3e50; }
         .link-icon { font-size: 1.8em; margin-bottom: 2px; }
 
         .loading { text-align: center; color: #888; padding: 30px; }
         
+        /* 2. 푸터 및 방문자 수 뱃지 */
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
         .footer a { color: #888; text-decoration: none; border-bottom: 1px dotted #888; }
+        .hits-badge { margin-top: 10px; }
+        .hits-badge img { height: 20px; }
     </style>
 </head>
 <body>
 
     <h1 onclick="window.location.href=window.location.pathname">🏛️ 국가유산 지도 검색</h1>
     
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) resetAndSearch()">
-        <button class="search-btn" onclick="resetAndSearch()">검색</button>
+    <!-- 4. 검색 모드 탭 -->
+    <div class="mode-tabs">
+        <button class="mode-tab active" onclick="switchMode('name')">이름으로 찾기</button>
+        <button class="mode-tab" onclick="switchMode('region')">지역으로 찾기</button>
     </div>
 
+    <!-- 모드 1: 이름 검색 -->
+    <div id="search-name" class="search-container active">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) searchByName()">
+            <button class="search-btn" onclick="searchByName()">검색</button>
+        </div>
+    </div>
+
+    <!-- 모드 2: 지역 검색 -->
+    <div id="search-region" class="search-container">
+        <div id="region-grid" class="region-grid"></div>
+    </div>
+
+    <!-- 필터 탭 -->
     <div id="filter-area" class="filter-container"></div>
 
+    <!-- 결과 리스트 -->
     <div id="result-area"></div>
     
     <button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">결과 더보기 +</button>
@@ -144,95 +173,146 @@
 
     <div class="footer">
         이 사이트는 국가유산청(<a href="https://www.khs.go.kr" target="_blank">https://www.khs.go.kr</a>)의 오픈API를 이용해서 만들었습니다.<br>
-        - Made by 이태건 -
+        - Made by 이태건 -<br>
+        <!-- 2. 방문자 수 뱃지 (URL은 사용자 주소로 설정) -->
+        <div class="hits-badge">
+            <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fexam1-beige.vercel.app&count_bg=%232C3E50&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
+        </div>
     </div>
 
     <script>
         const PROXY_BASE = "/api/proxy?url=";
         const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
-        const IMAGE_URL = "http://www.khs.go.kr/cha/SearchImageOpenapi.do";
 
-        let currentState = { query: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
+        // 상태 관리
+        let currentState = { 
+            mode: 'name', // 'name' or 'region'
+            query: "", 
+            regionCode: "", // 지역코드
+            pageIndex: 1, 
+            kdcd: "", 
+            totalCnt: 0 
+        };
+        
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
 
-        // 모든 종목 코드 포함
+        // 지역 코드 (API 표준)
+        const REGIONS = [
+            { code: "11", name: "서울" }, { code: "21", name: "부산" }, { code: "22", name: "대구" },
+            { code: "23", name: "인천" }, { code: "24", name: "광주" }, { code: "25", name: "대전" },
+            { code: "26", name: "울산" }, { code: "45", name: "세종" }, { code: "31", name: "경기" },
+            { code: "32", name: "강원" }, { code: "33", name: "충북" }, { code: "34", name: "충남" },
+            { code: "35", name: "전북" }, { code: "36", name: "전남" }, { code: "37", name: "경북" },
+            { code: "38", name: "경남" }, { code: "50", name: "제주" }
+        ];
+
+        // 종목 코드
         const CATEGORIES = [
-            { code: "", name: "전체" },
-            { code: "11", name: "국보" },
-            { code: "12", name: "보물" },
-            { code: "13", name: "사적" },
-            { code: "14", name: "사적및명승" },
-            { code: "15", name: "명승" },
-            { code: "16", name: "천연기념물" },
-            { code: "17", name: "국가민속" },
-            { code: "18", name: "국가무형" },
-            { code: "79", name: "국가등록" },
-            { code: "21", name: "시도유형" },
-            { code: "22", name: "시도무형" },
-            { code: "23", name: "시도기념물" },
-            { code: "24", name: "시도민속" },
-            { code: "25", name: "시도등록" },
-            { code: "31", name: "문화유산자료" },
-            { code: "80", name: "이북5도" }
+            { code: "", name: "전체" }, { code: "11", name: "국보" }, { code: "12", name: "보물" },
+            { code: "13", name: "사적" }, { code: "14", name: "사적및명승" }, { code: "15", name: "명승" },
+            { code: "16", name: "천연기념물" }, { code: "17", name: "국가민속" }, { code: "18", name: "국가무형" },
+            { code: "79", name: "국가등록" }, { code: "21", name: "시도유형" }, { code: "22", name: "시도무형" },
+            { code: "23", name: "시도기념물" }, { code: "24", name: "시도민속" }, { code: "25", name: "시도등록" },
+            { code: "31", name: "문화유산자료" }, { code: "80", name: "이북5도" }
         ];
 
         window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const sharedQuery = params.get('q');
-            createFilterTabs(""); 
-            if (sharedQuery) {
-                document.getElementById('searchInput').value = sharedQuery;
-                resetAndSearch();
-            }
+            renderRegionGrid(); // 지역 버튼 생성
+            createFilterTabs(""); // 필터 초기화
         };
 
-        async function resetAndSearch() {
+        // 검색 모드 전환
+        function switchMode(mode) {
+            currentState.mode = mode;
+            document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.search-container').forEach(c => c.classList.remove('active'));
+            
+            if(mode === 'name') {
+                document.querySelectorAll('.mode-tab')[0].classList.add('active');
+                document.getElementById('search-name').classList.add('active');
+            } else {
+                document.querySelectorAll('.mode-tab')[1].classList.add('active');
+                document.getElementById('search-region').classList.add('active');
+            }
+            
+            // 결과 초기화
+            document.getElementById('result-area').innerHTML = "";
+            document.getElementById('filter-area').innerHTML = "";
+            document.getElementById('loadMoreBtn').style.display = 'none';
+        }
+
+        // 지역 그리드 생성
+        function renderRegionGrid() {
+            const grid = document.getElementById('region-grid');
+            let html = "";
+            REGIONS.forEach(r => {
+                html += `<button class="region-btn" onclick="searchByRegion('${r.code}', this)">${r.name}</button>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        // 이름 검색
+        async function searchByName() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) { alert("검색어를 입력하세요."); return; }
 
-            const newUrl = window.location.pathname + '?q=' + encodeURIComponent(query);
-            window.history.pushState({ path: newUrl }, '', newUrl);
+            currentState = { mode: 'name', query: query, regionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
+            startSearch();
+        }
 
-            currentState = { query: query, pageIndex: 1, kdcd: "", totalCnt: 0 };
+        // 지역 검색
+        async function searchByRegion(code, btn) {
+            // 버튼 활성화 스타일
+            document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            currentState = { mode: 'region', query: "", regionCode: code, pageIndex: 1, kdcd: "", totalCnt: 0 };
+            startSearch();
+        }
+
+        // 공통 검색 시작
+        async function startSearch() {
             document.getElementById('result-area').innerHTML = '<div class="loading">데이터를 조회 중입니다...</div>';
             document.getElementById('loadMoreBtn').style.display = 'none';
 
-            await createFilterTabs(query);
+            await createFilterTabs();
             await loadList();
         }
 
-        async function createFilterTabs(query) {
+        // 필터 탭 생성 (이름 검색 or 지역 검색에 맞춰 개수 파악)
+        async function createFilterTabs() {
             const filterArea = document.getElementById('filter-area');
-            let html = "";
+            let html = `<button class="filter-btn fav-btn" onclick="showFavorites()">⭐ 즐겨찾기 (${favorites.length})</button>`;
 
-            html += `<button class="filter-btn fav-btn" onclick="showFavorites()">⭐ 즐겨찾기 (${favorites.length})</button>`;
+            const promises = CATEGORIES.map(async (cat) => {
+                // 검색 조건 조합
+                let url = `${LIST_URL}?pageUnit=1&ccbaKdcd=${cat.code}`;
+                if(currentState.mode === 'name') url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
+                else url += `&ccbaCtcd=${currentState.regionCode}`; // 지역 코드
 
-            if(query) {
-                const promises = CATEGORIES.map(async (cat) => {
-                    const url = `${LIST_URL}?ccbaMnm1=${encodeURIComponent(query)}&ccbaKdcd=${cat.code}&pageUnit=1`;
-                    try {
-                        const res = await fetch(PROXY_BASE + encodeURIComponent(url));
-                        const str = await res.text();
-                        const xml = new DOMParser().parseFromString(str, "text/xml");
-                        const totalCnt = xml.getElementsByTagName("totalCnt")[0]?.textContent || "0";
-                        return { ...cat, count: parseInt(totalCnt) };
-                    } catch { return { ...cat, count: 0 }; }
-                });
+                try {
+                    const res = await fetch(PROXY_BASE + encodeURIComponent(url));
+                    const str = await res.text();
+                    const xml = new DOMParser().parseFromString(str, "text/xml");
+                    const totalCnt = xml.getElementsByTagName("totalCnt")[0]?.textContent || "0";
+                    return { ...cat, count: parseInt(totalCnt) };
+                } catch { return { ...cat, count: 0 }; }
+            });
 
-                const results = await Promise.all(promises);
-                results.forEach((item) => {
-                    if (item.count > 0) {
-                        const activeClass = item.code === "" ? "active" : "";
-                        let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
-                        if(item.name === "전체") displayName = "전체";
-                        html += `<button class="filter-btn ${activeClass}" onclick="applyFilter(this, '${item.code}')">${displayName} (${item.count})</button>`;
-                    }
-                });
-            }
+            const results = await Promise.all(promises);
+            results.forEach((item) => {
+                if (item.count > 0) {
+                    const activeClass = item.code === "" ? "active" : "";
+                    let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
+                    if(item.name === "전체") displayName = "전체";
+                    html += `<button class="filter-btn ${activeClass}" onclick="applyFilter(this, '${item.code}')">${displayName} (${item.count})</button>`;
+                }
+            });
             filterArea.innerHTML = html;
         }
 
+        // 필터 적용
         function applyFilter(btn, kdcd) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -243,9 +323,11 @@
             loadList();
         }
 
+        // 즐겨찾기 보기
         function showFavorites() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('.fav-btn').classList.add('active');
+            
             const resultArea = document.getElementById('result-area');
             document.getElementById('loadMoreBtn').style.display = 'none';
             resultArea.innerHTML = "";
@@ -277,12 +359,18 @@
             loadList(true);
         }
 
+        // 목록 조회
         async function loadList(isAppend = false) {
             const resultArea = document.getElementById('result-area');
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             
             try {
-                let url = `${LIST_URL}?ccbaMnm1=${encodeURIComponent(currentState.query)}&pageIndex=${currentState.pageIndex}&pageUnit=10`;
+                let url = `${LIST_URL}?pageIndex=${currentState.pageIndex}&pageUnit=10`;
+                
+                // 검색 조건 추가
+                if(currentState.mode === 'name') url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
+                else url += `&ccbaCtcd=${currentState.regionCode}`; // 지역 코드
+
                 if (currentState.kdcd) url += `&ccbaKdcd=${currentState.kdcd}`;
 
                 const response = await fetch(PROXY_BASE + encodeURIComponent(url));
@@ -388,12 +476,11 @@
                     </table>
                 `;
 
+                // ✨ 1. 갤러리 제거하고 대표 이미지 1장만 표시 (원복)
                 if (imgUrl) {
                     html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img">`;
                 }
 
-                // 갤러리 위치
-                html += `<div id="gallery-${kdcd}-${asno}" class="gallery-container"></div>`;
                 html += `<div class="detail-desc">${formatText(content)}</div>`;
 
                 const mapId = `map-${kdcd}-${asno}`;
@@ -418,49 +505,11 @@
 
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
-                
-                // ✨ [수정됨] 오직 '이름'으로만 검색하여 풍성한 갤러리 확보
-                loadGalleryImages(name, kdcd, asno);
 
             } catch (e) {
                 console.error(e);
                 detailView.innerHTML = "정보를 불러올 수 없습니다.";
             }
-        }
-
-        // ✨ [수정됨] 이름 기반 이미지 검색
-        async function loadGalleryImages(name, kdcd, asno) {
-            try {
-                // ID 조건은 모두 제거하고 이름(ccbaMnm1)만 사용
-                const url = `${IMAGE_URL}?ccbaMnm1=${encodeURIComponent(name)}&pageUnit=50`;
-                const response = await fetch(PROXY_BASE + encodeURIComponent(url));
-                const str = await response.text();
-                const xml = new DOMParser().parseFromString(str, "text/xml");
-                const items = xml.getElementsByTagName("item");
-
-                const galleryDiv = document.getElementById(`gallery-${kdcd}-${asno}`);
-                if (!items || items.length === 0) {
-                    galleryDiv.style.display = 'none';
-                    return;
-                }
-
-                let imgHtml = "";
-                for(let i=0; i < items.length; i++) {
-                    const imgUrl = items[i].getElementsByTagName("imageUrl")[0]?.textContent;
-                    const imgDesc = items[i].getElementsByTagName("ccimDesc")[0]?.textContent || "이미지";
-
-                    if(imgUrl) {
-                         imgHtml += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="gallery-img" title="${imgDesc}" onclick="window.open('${imgUrl}')">`;
-                    }
-                }
-                
-                if(imgHtml) {
-                    galleryDiv.innerHTML = imgHtml;
-                    galleryDiv.style.display = 'flex';
-                } else {
-                    galleryDiv.style.display = 'none';
-                }
-            } catch(e) { console.log("Gallery load failed"); }
         }
 
         function toggleFavorite(kdcd, ctcd, asno, name, type, icon) {
