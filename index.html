@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
-    <meta name="referrer" content="origin">
-    <!-- 네이버 지도 API -->
+    <!-- 지도 인증 에러 방지용 태그 -->
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <!-- 네이버 지도 API (신규 ID: an3gqg9xly) -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
     
     <style>
         /* 기본 설정 */
         body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 160px; box-sizing: border-box; color: #333; }
         
-        @media (max-width: 600px) { body { padding: 10px; } }
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+        }
 
         h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; letter-spacing: -1px; cursor: pointer; }
         
@@ -32,22 +36,27 @@
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
 
-        /* ✨ [수정됨] 지역 선택 영역 (가로 스크롤 칩 스타일) */
-        .region-scroll-area { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-        .region-scroll-area::-webkit-scrollbar { display: none; }
+        /* ✨ [수정됨] 지역 선택 영역 (줄바꿈 스타일 적용) */
+        /* PC에서는 펼쳐지고, 모바일에서는 여러 줄로 나옵니다 */
+        .region-scroll-area { 
+            display: flex; 
+            flex-wrap: wrap; /* 중요: 공간 부족하면 다음 줄로 */
+            gap: 8px; 
+            justify-content: center; /* 가운데 정렬 */
+            margin-bottom: 15px; 
+        }
         
-        .chip-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.95em; transition: 0.2s; flex-shrink: 0; }
-        .chip-btn:hover { background-color: #f0f0f0; }
+        .chip-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.95em; transition: 0.2s; flex-shrink: 0; }
+        .chip-btn:hover { background-color: #f0f0f0; border-color: #aaa; }
         .chip-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
 
-        /* 하위 지역 (구/군) 영역 - 처음엔 숨김 */
-        #sub-region-area { display: none; border-top: 1px dashed #ddd; padding-top: 10px; margin-bottom: 15px; }
-        .sub-region-title { font-size: 0.85em; color: #888; margin-bottom: 8px; margin-left: 5px; }
+        /* 하위 지역 영역 */
+        #sub-region-area { display: none; border-top: 1px dashed #ddd; padding-top: 15px; margin-bottom: 20px; text-align: center; }
+        .sub-region-title { font-size: 0.9em; color: #2c3e50; margin-bottom: 10px; font-weight: bold; }
 
-        /* 필터 탭 */
-        .filter-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
-        .filter-container::-webkit-scrollbar { display: none; }
-        .filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
+        /* 필터 탭 (종목 선택) - 여기도 줄바꿈 적용 */
+        .filter-container { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 10px; margin-bottom: 20px; justify-content: center; }
+        .filter-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
         .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
         .filter-btn.fav-btn { color: #f39c12; border-color: #f39c12; }
         .filter-btn.fav-btn.active { background-color: #f39c12; color: white; }
@@ -107,8 +116,15 @@
         
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
         .footer a { color: #888; text-decoration: none; border-bottom: 1px dotted #888; }
-        .hits-badge { margin-top: 10px; }
-        .hits-badge img { height: 20px; }
+        
+        /* ✨ 방문자 수 뱃지 스타일 */
+        .hits-badge { margin-top: 15px; display: inline-block; }
+        .hits-badge img { height: 20px; vertical-align: middle; }
+        
+        /* 갤러리 영역 */
+        .gallery-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
+        .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
+        .gallery-img:hover { border-color: #2c3e50; }
     </style>
 </head>
 <body>
@@ -128,12 +144,12 @@
         </div>
     </div>
 
-    <!-- 모드 2: 지역 검색 (2단 칩 UI 적용) -->
+    <!-- 모드 2: 지역 검색 -->
     <div id="search-region" class="search-container">
-        <!-- 상위 지역 (시/도) -->
+        <!-- ✨ 줄바꿈 적용된 지역 버튼들 -->
         <div id="region-main-scroll" class="region-scroll-area"></div>
         
-        <!-- 하위 지역 (시/군/구) - 선택 시 나타남 -->
+        <!-- 하위 지역 -->
         <div id="sub-region-area">
             <div class="sub-region-title">▼ 상세 지역 선택</div>
             <div id="region-sub-scroll" class="region-scroll-area"></div>
@@ -148,7 +164,6 @@
     
     <button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">결과 더보기 +</button>
 
-    <!-- 하단 관련 사이트 섹션 -->
     <div class="related-section">
         <h3 class="related-title">관련 사이트</h3>
         <div class="quick-links">
@@ -178,8 +193,9 @@
     <div class="footer">
         이 사이트는 국가유산청(<a href="https://www.khs.go.kr" target="_blank">https://www.khs.go.kr</a>)의 오픈API를 이용해서 만들었습니다.<br>
         - Made by 이태건 -<br>
+        <!-- ✨ [수정됨] Hits 뱃지 주소 갱신 (이미지 태그를 새로 생성함) -->
         <div class="hits-badge">
-            <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fexam1-beige.vercel.app&count_bg=%232C3E50&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
+            <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fexam1-beige.vercel.app%2F&count_bg=%232C3E50&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
         </div>
     </div>
 
@@ -189,20 +205,9 @@
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
         const IMAGE_URL = "http://www.khs.go.kr/cha/SearchImageOpenapi.do";
 
-        // 상태 관리
-        let currentState = { 
-            mode: 'name', 
-            query: "", 
-            regionCode: "",     // 시도 코드
-            subRegionCode: "",  // 시군구 코드 (추가됨)
-            pageIndex: 1, 
-            kdcd: "", 
-            totalCnt: 0 
-        };
-        
+        let currentState = { mode: 'name', query: "", regionCode: "", subRegionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
 
-        // 지역 코드 (API 표준)
         const REGIONS = [
             { code: "11", name: "서울" }, { code: "21", name: "부산" }, { code: "22", name: "대구" },
             { code: "23", name: "인천" }, { code: "24", name: "광주" }, { code: "25", name: "대전" },
@@ -212,31 +217,9 @@
             { code: "38", name: "경남" }, { code: "50", name: "제주" }
         ];
 
-        // ✨ [핵심] 하위 지역 데이터 (서울, 전남 예시 - 필요시 추가 가능)
-        // 국가유산청 행정구역 코드 기준 (보통 11~XX 순서)
         const SUB_REGIONS = {
-            "11": [ // 서울
-                {code: "11", name: "종로구"}, {code: "12", name: "중구"}, {code: "13", name: "용산구"}, 
-                {code: "14", name: "성동구"}, {code: "15", name: "광진구"}, {code: "16", name: "동대문구"},
-                {code: "17", name: "중랑구"}, {code: "18", name: "성북구"}, {code: "19", name: "강북구"},
-                {code: "20", name: "도봉구"}, {code: "21", name: "노원구"}, {code: "22", name: "은평구"},
-                {code: "23", name: "서대문구"}, {code: "24", name: "마포구"}, {code: "25", name: "양천구"},
-                {code: "26", name: "강서구"}, {code: "27", name: "구로구"}, {code: "28", name: "금천구"},
-                {code: "29", name: "영등포구"}, {code: "30", name: "동작구"}, {code: "31", name: "관악구"},
-                {code: "32", name: "서초구"}, {code: "33", name: "강남구"}, {code: "34", name: "송파구"},
-                {code: "35", name: "강동구"}
-            ],
-            "36": [ // 전남
-                {code: "11", name: "목포시"}, {code: "12", name: "여수시"}, {code: "13", name: "순천시"},
-                {code: "14", name: "나주시"}, {code: "15", name: "광양시"}, {code: "16", name: "담양군"},
-                {code: "17", name: "곡성군"}, {code: "18", name: "구례군"}, {code: "19", name: "고흥군"},
-                {code: "20", name: "보성군"}, {code: "21", name: "화순군"}, {code: "22", name: "장흥군"},
-                {code: "23", name: "강진군"}, {code: "24", name: "해남군"}, {code: "25", name: "영암군"},
-                {code: "26", name: "무안군"}, {code: "27", name: "함평군"}, {code: "28", name: "영광군"},
-                {code: "29", name: "장성군"}, {code: "30", name: "완도군"}, {code: "31", name: "진도군"},
-                {code: "32", name: "신안군"}
-            ]
-            // 나머지 지역은 데이터가 너무 많아 우선 생략 (필요시 추가하면 됩니다)
+            "11": [{code: "11", name: "종로구"}, {code: "12", name: "중구"}, {code: "13", name: "용산구"}, {code: "14", name: "성동구"}, {code: "15", name: "광진구"}, {code: "16", name: "동대문구"}, {code: "17", name: "중랑구"}, {code: "18", name: "성북구"}, {code: "19", name: "강북구"}, {code: "20", name: "도봉구"}, {code: "21", name: "노원구"}, {code: "22", name: "은평구"}, {code: "23", name: "서대문구"}, {code: "24", name: "마포구"}, {code: "25", name: "양천구"}, {code: "26", name: "강서구"}, {code: "27", name: "구로구"}, {code: "28", name: "금천구"}, {code: "29", name: "영등포구"}, {code: "30", name: "동작구"}, {code: "31", name: "관악구"}, {code: "32", name: "서초구"}, {code: "33", name: "강남구"}, {code: "34", name: "송파구"}, {code: "35", name: "강동구"}],
+            "36": [{code: "11", name: "목포시"}, {code: "12", name: "여수시"}, {code: "13", name: "순천시"}, {code: "14", name: "나주시"}, {code: "15", name: "광양시"}, {code: "16", name: "담양군"}, {code: "17", name: "곡성군"}, {code: "18", name: "구례군"}, {code: "19", name: "고흥군"}, {code: "20", name: "보성군"}, {code: "21", name: "화순군"}, {code: "22", name: "장흥군"}, {code: "23", name: "강진군"}, {code: "24", name: "해남군"}, {code: "25", name: "영암군"}, {code: "26", name: "무안군"}, {code: "27", name: "함평군"}, {code: "28", name: "영광군"}, {code: "29", name: "장성군"}, {code: "30", name: "완도군"}, {code: "31", name: "진도군"}, {code: "32", name: "신안군"}]
         };
 
         const CATEGORIES = [
@@ -249,7 +232,7 @@
         ];
 
         window.onload = function() {
-            renderRegionGrid(); // 메인 지역 칩 생성
+            renderRegionGrid();
             createFilterTabs(""); 
         };
 
@@ -266,17 +249,13 @@
                 document.getElementById('search-region').classList.add('active');
             }
             
-            // 초기화
             document.getElementById('result-area').innerHTML = "";
             document.getElementById('filter-area').innerHTML = "";
             document.getElementById('loadMoreBtn').style.display = 'none';
             document.getElementById('sub-region-area').style.display = 'none';
-            
-            // 지역 선택 초기화 스타일
             document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         }
 
-        // 메인 지역(시/도) 렌더링
         function renderRegionGrid() {
             const grid = document.getElementById('region-main-scroll');
             let html = "";
@@ -286,24 +265,18 @@
             grid.innerHTML = html;
         }
 
-        // 메인 지역 선택 시
         function selectMainRegion(code, btn) {
-            // 스타일 활성화
             document.getElementById('region-main-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // 하위 지역 초기화
             currentState.regionCode = code;
             currentState.subRegionCode = ""; 
             currentState.pageIndex = 1;
             
             renderSubRegions(code);
-            
-            // 즉시 검색 시작 (전체 구/군)
             startSearch();
         }
 
-        // 하위 지역(시/군/구) 렌더링
         function renderSubRegions(mainCode) {
             const subArea = document.getElementById('sub-region-area');
             const subScroll = document.getElementById('region-sub-scroll');
@@ -311,28 +284,23 @@
             const subList = SUB_REGIONS[mainCode];
 
             if (!subList) {
-                // 하위 데이터가 없으면 숨김
                 subArea.style.display = 'none';
                 return;
             }
 
             subArea.style.display = 'block';
             let html = `<button class="chip-btn active" onclick="selectSubRegion('', this)">전체</button>`;
-            
             subList.forEach(sub => {
                 html += `<button class="chip-btn" onclick="selectSubRegion('${sub.code}', this)">${sub.name}</button>`;
             });
             subScroll.innerHTML = html;
         }
 
-        // 하위 지역 선택 시
         function selectSubRegion(code, btn) {
             document.getElementById('region-sub-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             currentState.subRegionCode = code;
             currentState.pageIndex = 1;
-            
             startSearch();
         }
 
@@ -360,7 +328,6 @@
                     url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
                     url += `&ccbaCtcd=${currentState.regionCode}`;
-                    // 하위 지역 코드가 있으면 추가 (ccbaLcto)
                     if(currentState.subRegionCode) url += `&ccbaLcto=${currentState.subRegionCode}`;
                 }
 
@@ -440,7 +407,6 @@
                     url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
                     url += `&ccbaCtcd=${currentState.regionCode}`;
-                    // 하위 지역 필터 추가
                     if(currentState.subRegionCode) url += `&ccbaLcto=${currentState.subRegionCode}`;
                 }
 
@@ -549,11 +515,11 @@
                     </table>
                 `;
 
-                // 1. 갤러리 제거하고 대표 이미지 1장만 표시 (원복)
                 if (imgUrl) {
                     html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img">`;
                 }
 
+                html += `<div id="gallery-${kdcd}-${asno}" class="gallery-container"></div>`;
                 html += `<div class="detail-desc">${formatText(content)}</div>`;
 
                 const mapId = `map-${kdcd}-${asno}`;
@@ -578,11 +544,47 @@
 
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
+                
+                // 갤러리 로드 (이름 기반 검색)
+                loadGalleryImages(name, kdcd, asno);
 
             } catch (e) {
                 console.error(e);
                 detailView.innerHTML = "정보를 불러올 수 없습니다.";
             }
+        }
+
+        async function loadGalleryImages(name, kdcd, asno) {
+            try {
+                const url = `${IMAGE_URL}?ccbaMnm1=${encodeURIComponent(name)}&pageUnit=50`;
+                const response = await fetch(PROXY_BASE + encodeURIComponent(url));
+                const str = await response.text();
+                const xml = new DOMParser().parseFromString(str, "text/xml");
+                const items = xml.getElementsByTagName("item");
+
+                const galleryDiv = document.getElementById(`gallery-${kdcd}-${asno}`);
+                if (!items || items.length === 0) {
+                    galleryDiv.style.display = 'none';
+                    return;
+                }
+
+                let imgHtml = "";
+                for(let i=0; i < items.length; i++) {
+                    const imgUrl = items[i].getElementsByTagName("imageUrl")[0]?.textContent;
+                    const imgDesc = items[i].getElementsByTagName("ccimDesc")[0]?.textContent || "이미지";
+
+                    if(imgUrl) {
+                         imgHtml += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="gallery-img" title="${imgDesc}" onclick="window.open('${imgUrl}')">`;
+                    }
+                }
+                
+                if(imgHtml) {
+                    galleryDiv.innerHTML = imgHtml;
+                    galleryDiv.style.display = 'flex';
+                } else {
+                    galleryDiv.style.display = 'none';
+                }
+            } catch(e) { console.log("Gallery load failed"); }
         }
 
         function toggleFavorite(kdcd, ctcd, asno, name, type, icon) {
