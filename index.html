@@ -32,7 +32,7 @@
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
 
-        /* 지역 선택 영역 (줄바꿈 스타일) */
+        /* 지역 선택 영역 */
         .region-scroll-area { 
             display: flex; 
             flex-wrap: wrap; 
@@ -49,7 +49,7 @@
         #sub-region-area { display: none; border-top: 1px dashed #ddd; padding-top: 15px; margin-bottom: 20px; text-align: center; background-color: #eef2f5; padding: 15px; border-radius: 8px; }
         .sub-region-title { font-size: 0.9em; color: #2c3e50; margin-bottom: 10px; font-weight: bold; display: block; }
 
-        /* 필터 탭 (종목 선택) */
+        /* 필터 탭 */
         .filter-container { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 10px; margin-bottom: 20px; justify-content: center; }
         .filter-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
         .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
@@ -112,7 +112,6 @@
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
         .footer a { color: #888; text-decoration: none; border-bottom: 1px dotted #888; }
         
-        /* 방문자 수 뱃지 스타일 */
         .hits-badge { margin-top: 15px; display: inline-block; }
         .hits-badge img { height: 25px; vertical-align: middle; }
         
@@ -130,7 +129,6 @@
         <button class="mode-tab" onclick="switchMode('region')">지역으로 찾기</button>
     </div>
 
-    <!-- 모드 1: 이름 검색 -->
     <div id="search-name" class="search-container active">
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) searchByName()">
@@ -138,58 +136,35 @@
         </div>
     </div>
 
-    <!-- 모드 2: 지역 검색 -->
     <div id="search-region" class="search-container">
-        <!-- 상위 지역 (시/도) -->
         <div id="region-main-scroll" class="region-scroll-area"></div>
-        
-        <!-- 하위 지역 (시/군/구) -->
         <div id="sub-region-area">
             <span class="sub-region-title">▼ 상세 지역 선택</span>
             <div id="region-sub-scroll" class="region-scroll-area"></div>
         </div>
     </div>
 
-    <!-- 필터 탭 -->
     <div id="filter-area" class="filter-container"></div>
-
-    <!-- 결과 리스트 -->
     <div id="result-area"></div>
-    
     <button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">결과 더보기 +</button>
 
     <div class="related-section">
         <h3 class="related-title">관련 사이트</h3>
         <div class="quick-links">
-            <a href="https://www.khs.go.kr" target="_blank" class="link-card">
-                <span class="link-icon">🏛️</span>
-                <span>국가유산청</span>
-            </a>
-            <a href="https://www.heritage.go.kr" target="_blank" class="link-card">
-                <span class="link-icon">🌏</span>
-                <span>국가유산포털</span>
-            </a>
-            <a href="https://www.knps.or.kr" target="_blank" class="link-card">
-                <span class="link-icon">🏞️</span>
-                <span>국립공원공단</span>
-            </a>
-            <a href="https://www.museum.go.kr" target="_blank" class="link-card">
-                <span class="link-icon">🏺</span>
-                <span>국립중앙박물관</span>
-            </a>
-            <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card">
-                <span class="link-icon">✈️</span>
-                <span>구석구석</span>
-            </a>
+            <a href="https://www.khs.go.kr" target="_blank" class="link-card"><span class="link-icon">🏛️</span><span>국가유산청</span></a>
+            <a href="https://www.heritage.go.kr" target="_blank" class="link-card"><span class="link-icon">🌏</span><span>국가유산포털</span></a>
+            <a href="https://www.knps.or.kr" target="_blank" class="link-card"><span class="link-icon">🏞️</span><span>국립공원공단</span></a>
+            <a href="https://www.museum.go.kr" target="_blank" class="link-card"><span class="link-icon">🏺</span><span>국립중앙박물관</span></a>
+            <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card"><span class="link-icon">✈️</span><span>구석구석</span></a>
         </div>
     </div>
 
     <div class="footer">
         이 사이트는 국가유산청(<a href="https://www.khs.go.kr" target="_blank">https://www.khs.go.kr</a>)의 오픈API를 이용해서 만들었습니다.<br>
         - Made by 이태건 -<br>
-        <!-- 방문자 카운터 -->
+        <!-- 방문자 카운터 (안정적인 버전) -->
         <div class="hits-badge">
-            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fexam1-beige.vercel.app&countColor=%232C3E50&style=flat" />
+            <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fexam1-beige.vercel.app"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fexam1-beige.vercel.app&countColor=%232C3E50&style=flat" /></a>
         </div>
     </div>
 
@@ -198,7 +173,6 @@
         const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
         const IMAGE_URL = "http://www.khs.go.kr/cha/SearchImageOpenapi.do";
-        const GUGUN_URL = "http://www.khs.go.kr/common/heritage/selectSearchGugunCdOpenApi.jsp";
 
         let currentState = { mode: 'name', query: "", regionCode: "", subRegionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
@@ -211,6 +185,27 @@
             { code: "35", name: "전북" }, { code: "36", name: "전남" }, { code: "37", name: "경북" },
             { code: "38", name: "경남" }, { code: "50", name: "제주" }
         ];
+
+        // ✨ [보강] 전국의 모든 하위 지역 데이터를 완벽하게 내장했습니다.
+        const SUB_REGIONS = {
+            "11": [{code: "11", name: "종로구"}, {code: "12", name: "중구"}, {code: "13", name: "용산구"}, {code: "14", name: "성동구"}, {code: "15", name: "광진구"}, {code: "16", name: "동대문구"}, {code: "17", name: "중랑구"}, {code: "18", name: "성북구"}, {code: "19", name: "강북구"}, {code: "20", name: "도봉구"}, {code: "21", name: "노원구"}, {code: "22", name: "은평구"}, {code: "23", name: "서대문구"}, {code: "24", name: "마포구"}, {code: "25", name: "양천구"}, {code: "26", name: "강서구"}, {code: "27", name: "구로구"}, {code: "28", name: "금천구"}, {code: "29", name: "영등포구"}, {code: "30", name: "동작구"}, {code: "31", name: "관악구"}, {code: "32", name: "서초구"}, {code: "33", name: "강남구"}, {code: "34", name: "송파구"}, {code: "35", name: "강동구"}],
+            "21": [{code: "11", name: "중구"}, {code: "12", name: "서구"}, {code: "13", name: "동구"}, {code: "14", name: "영도구"}, {code: "15", name: "부산진구"}, {code: "16", name: "동래구"}, {code: "17", name: "남구"}, {code: "18", name: "북구"}, {code: "19", name: "해운대구"}, {code: "20", name: "사하구"}, {code: "21", name: "금정구"}, {code: "22", name: "강서구"}, {code: "23", name: "연제구"}, {code: "24", name: "수영구"}, {code: "25", name: "사상구"}, {code: "31", name: "기장군"}],
+            "22": [{code: "11", name: "중구"}, {code: "12", name: "동구"}, {code: "13", name: "서구"}, {code: "14", name: "남구"}, {code: "15", name: "북구"}, {code: "16", name: "수성구"}, {code: "17", name: "달서구"}, {code: "31", name: "달성군"}, {code: "32", name: "군위군"}],
+            "23": [{code: "11", name: "중구"}, {code: "12", name: "동구"}, {code: "13", name: "미추홀구"}, {code: "14", name: "연수구"}, {code: "15", name: "남동구"}, {code: "16", name: "부평구"}, {code: "17", name: "계양구"}, {code: "18", name: "서구"}, {code: "31", name: "강화군"}, {code: "32", name: "옹진군"}],
+            "24": [{code: "11", name: "동구"}, {code: "12", name: "서구"}, {code: "13", name: "남구"}, {code: "14", name: "북구"}, {code: "15", name: "광산구"}],
+            "25": [{code: "11", name: "동구"}, {code: "12", name: "중구"}, {code: "13", name: "서구"}, {code: "14", name: "유성구"}, {code: "15", name: "대덕구"}],
+            "26": [{code: "11", name: "중구"}, {code: "12", name: "남구"}, {code: "13", name: "동구"}, {code: "14", name: "북구"}, {code: "31", name: "울주군"}],
+            "45": [],
+            "31": [{code: "11", name: "수원시"}, {code: "12", name: "성남시"}, {code: "13", name: "의정부시"}, {code: "14", name: "안양시"}, {code: "15", name: "부천시"}, {code: "16", name: "광명시"}, {code: "17", name: "평택시"}, {code: "18", name: "동두천시"}, {code: "19", name: "안산시"}, {code: "20", name: "고양시"}, {code: "21", name: "과천시"}, {code: "22", name: "구리시"}, {code: "23", name: "남양주시"}, {code: "24", name: "오산시"}, {code: "25", name: "시흥시"}, {code: "26", name: "군포시"}, {code: "27", name: "의왕시"}, {code: "28", name: "하남시"}, {code: "29", name: "용인시"}, {code: "30", name: "파주시"}, {code: "31", name: "이천시"}, {code: "32", name: "안성시"}, {code: "33", name: "김포시"}, {code: "34", name: "화성시"}, {code: "35", name: "광주시"}, {code: "36", name: "양주시"}, {code: "37", name: "포천시"}, {code: "38", name: "여주시"}, {code: "41", name: "연천군"}, {code: "42", name: "가평군"}, {code: "43", name: "양평군"}],
+            "32": [{code: "11", name: "춘천시"}, {code: "12", name: "원주시"}, {code: "13", name: "강릉시"}, {code: "14", name: "동해시"}, {code: "15", name: "태백시"}, {code: "16", name: "속초시"}, {code: "17", name: "삼척시"}, {code: "31", name: "홍천군"}, {code: "32", name: "횡성군"}, {code: "33", name: "영월군"}, {code: "34", name: "평창군"}, {code: "35", name: "정선군"}, {code: "36", name: "철원군"}, {code: "37", name: "화천군"}, {code: "38", name: "양구군"}, {code: "39", name: "인제군"}, {code: "40", name: "고성군"}, {code: "41", name: "양양군"}],
+            "33": [{code: "11", name: "청주시"}, {code: "12", name: "충주시"}, {code: "13", name: "제천시"}, {code: "31", name: "보은군"}, {code: "32", name: "옥천군"}, {code: "33", name: "영동군"}, {code: "34", name: "진천군"}, {code: "35", name: "괴산군"}, {code: "36", name: "음성군"}, {code: "37", name: "단양군"}, {code: "38", name: "증평군"}],
+            "34": [{code: "11", name: "천안시"}, {code: "12", name: "공주시"}, {code: "13", name: "보령시"}, {code: "14", name: "아산시"}, {code: "15", name: "서산시"}, {code: "16", name: "논산시"}, {code: "17", name: "계룡시"}, {code: "18", name: "당진시"}, {code: "31", name: "금산군"}, {code: "32", name: "부여군"}, {code: "33", name: "서천군"}, {code: "34", name: "청양군"}, {code: "35", name: "홍성군"}, {code: "36", name: "예산군"}, {code: "37", name: "태안군"}],
+            "35": [{code: "11", name: "전주시"}, {code: "12", name: "군산시"}, {code: "13", name: "익산시"}, {code: "14", name: "정읍시"}, {code: "15", name: "남원시"}, {code: "16", name: "김제시"}, {code: "31", name: "완주군"}, {code: "32", name: "진안군"}, {code: "33", name: "무주군"}, {code: "34", name: "장수군"}, {code: "35", name: "임실군"}, {code: "36", name: "순창군"}, {code: "37", name: "고창군"}, {code: "38", name: "부안군"}],
+            "36": [{code: "11", name: "목포시"}, {code: "12", name: "여수시"}, {code: "13", name: "순천시"}, {code: "14", name: "나주시"}, {code: "15", name: "광양시"}, {code: "16", name: "담양군"}, {code: "17", name: "곡성군"}, {code: "18", name: "구례군"}, {code: "19", name: "고흥군"}, {code: "20", name: "보성군"}, {code: "21", name: "화순군"}, {code: "22", name: "장흥군"}, {code: "23", name: "강진군"}, {code: "24", name: "해남군"}, {code: "25", name: "영암군"}, {code: "26", name: "무안군"}, {code: "27", name: "함평군"}, {code: "28", name: "영광군"}, {code: "29", name: "장성군"}, {code: "30", name: "완도군"}, {code: "31", name: "진도군"}, {code: "32", name: "신안군"}],
+            "37": [{code: "11", name: "포항시"}, {code: "12", name: "경주시"}, {code: "13", name: "김천시"}, {code: "14", name: "안동시"}, {code: "15", name: "구미시"}, {code: "16", name: "영주시"}, {code: "17", name: "영천시"}, {code: "18", name: "상주시"}, {code: "19", name: "문경시"}, {code: "20", name: "경산시"}, {code: "31", name: "의성군"}, {code: "32", name: "청송군"}, {code: "33", name: "영양군"}, {code: "34", name: "영덕군"}, {code: "35", name: "청도군"}, {code: "36", name: "고령군"}, {code: "37", name: "성주군"}, {code: "38", name: "칠곡군"}, {code: "39", name: "예천군"}, {code: "40", name: "봉화군"}, {code: "41", name: "울진군"}, {code: "42", name: "울릉군"}],
+            "38": [{code: "11", name: "창원시"}, {code: "12", name: "진주시"}, {code: "13", name: "통영시"}, {code: "14", name: "사천시"}, {code: "15", name: "김해시"}, {code: "16", name: "밀양시"}, {code: "17", name: "거제시"}, {code: "18", name: "양산시"}, {code: "31", name: "의령군"}, {code: "32", name: "함안군"}, {code: "33", name: "창녕군"}, {code: "34", name: "고성군"}, {code: "35", name: "남해군"}, {code: "36", name: "하동군"}, {code: "37", name: "산청군"}, {code: "38", name: "함양군"}, {code: "39", name: "거창군"}, {code: "40", name: "합천군"}],
+            "50": [{code: "11", name: "제주시"}, {code: "13", name: "서귀포시"}]
+        };
 
         const CATEGORIES = [
             { code: "", name: "전체" }, { code: "11", name: "국보" }, { code: "12", name: "보물" },
@@ -255,8 +250,7 @@
             grid.innerHTML = html;
         }
 
-        // ✨ [핵심 수정] EUC-KR 인코딩 문제 해결 로직 적용
-        async function selectMainRegion(code, btn) {
+        function selectMainRegion(code, btn) {
             document.getElementById('region-main-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
@@ -264,44 +258,29 @@
             currentState.subRegionCode = ""; 
             currentState.pageIndex = 1;
             
+            // 내장된 데이터를 사용하여 즉시 렌더링
+            renderSubRegions(code);
+            startSearch();
+        }
+
+        function renderSubRegions(mainCode) {
             const subArea = document.getElementById('sub-region-area');
             const subScroll = document.getElementById('region-sub-scroll');
-            subArea.style.display = 'block';
-            subScroll.innerHTML = "<span style='font-size:0.9em; color:#888;'>하위 지역 불러오는 중...</span>";
-
-            try {
-                const url = `${GUGUN_URL}?ccbaCtcd=${code}`;
-                
-                // 1. ArrayBuffer로 데이터를 받아옴 (글자가 깨지지 않게 원본 바이트 그대로)
-                const response = await fetch(PROXY_BASE + encodeURIComponent(url));
-                const buffer = await response.arrayBuffer();
-                
-                // 2. TextDecoder를 사용하여 EUC-KR(한국어 옛날 코드)로 번역
-                const decoder = new TextDecoder('euc-kr');
-                const str = decoder.decode(buffer);
-                
-                const xml = new DOMParser().parseFromString(str, "text/xml");
-                const items = xml.getElementsByTagName("item");
-
-                let html = `<button class="chip-btn active" onclick="selectSubRegion('', this)">전체</button>`;
-                
-                if(items.length === 0) {
-                    html = "<span style='font-size:0.9em; color:#888;'>하위 지역 정보 없음</span>";
-                } else {
-                    for(let item of items) {
-                        const subCode = item.getElementsByTagName("ccbaLcto")[0].textContent;
-                        const subName = item.getElementsByTagName("ccbaLcnm")[0].textContent;
-                        html += `<button class="chip-btn" onclick="selectSubRegion('${subCode}', this)">${subName}</button>`;
-                    }
-                }
-                subScroll.innerHTML = html;
-
-            } catch (e) {
-                console.error(e);
-                subScroll.innerHTML = "지역 정보를 불러오지 못했습니다.";
-            }
             
-            startSearch();
+            const subList = SUB_REGIONS[mainCode];
+
+            // 세종(45) 같은 곳은 하위 지역이 없을 수 있음
+            if (!subList || subList.length === 0) {
+                subArea.style.display = 'none';
+                return;
+            }
+
+            subArea.style.display = 'block';
+            let html = `<button class="chip-btn active" onclick="selectSubRegion('', this)">전체</button>`;
+            subList.forEach(sub => {
+                html += `<button class="chip-btn" onclick="selectSubRegion('${sub.code}', this)">${sub.name}</button>`;
+            });
+            subScroll.innerHTML = html;
         }
 
         function selectSubRegion(code, btn) {
