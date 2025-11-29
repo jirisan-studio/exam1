@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
+    <!-- ✨ 검색엔진 최적화 (SEO) 정보 적용 -->
+    <meta name="description" content="국가유산청에 등록된 국가유산을 이름과 지역 검색으로 확인할 수 있는 홈페이지 입니다">
+    <meta name="keywords" content="국가유산, 문화재, 국가유산청, 유네스코 세계유산, 국보, 보물, 무형유산, 사적, 궁궐, 문화유산 방문 캠페인, 문화유산 야행, 문화재 지킴이">
+    <meta name="author" content="Jirisan-studio">
+    
+    <!-- SNS(카카오톡 등) 공유 시 보여질 정보 -->
+    <meta property="og:title" content="국가유산 지도 검색">
+    <meta property="og:description" content="국가유산청에 등록된 국가유산을 이름과 지역 검색으로 확인할 수 있는 홈페이지 입니다">
+    <meta property="og:image" content="https://www.heritage.go.kr/images/main/heritage_main_sample.png"> 
+    <meta property="og:type" content="website">
+
     <meta name="referrer" content="no-referrer-when-downgrade">
     <!-- 네이버 지도 API -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
@@ -26,13 +37,20 @@
         .search-container.active { display: block; }
 
         /* 이름 검색창 */
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 10px; }
         input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         input:focus { border-color: #2c3e50; }
         button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
         button.search-btn:hover { background-color: #34495e; }
 
-        /* 지역 선택 영역 (PC 줄바꿈 대응) */
+        /* 최근 검색어 영역 */
+        .recent-search-area { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
+        .recent-search-area::-webkit-scrollbar { display: none; }
+        .recent-chip { font-size: 0.85em; color: #555; background: #e9ecef; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid transparent; }
+        .recent-chip:hover { background: #dde1e6; color: #2c3e50; border-color: #cfd4da; }
+        .recent-label { font-size: 0.8em; color: #888; margin-right: 5px; align-self: center; white-space: nowrap; }
+
+        /* 지역 선택 영역 */
         .region-scroll-area { 
             display: flex; 
             flex-wrap: wrap; 
@@ -112,6 +130,9 @@
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
         .footer a { color: #888; text-decoration: none; border-bottom: 1px dotted #888; }
         
+        .contact-link { display: inline-block; margin-top: 5px; cursor: pointer; color: #555; font-weight: bold; transition: 0.2s; }
+        .contact-link:hover { color: #2c3e50; text-decoration: underline; }
+
         /* 방문자 수 뱃지 */
         .hits-badge { margin-top: 15px; display: inline-block; }
         
@@ -134,6 +155,8 @@
             <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) searchByName()">
             <button class="search-btn" onclick="searchByName()">검색</button>
         </div>
+        <!-- 최근 검색어 -->
+        <div id="recent-search-area" class="recent-search-area"></div>
     </div>
 
     <div id="search-region" class="search-container">
@@ -162,6 +185,9 @@
     <div class="footer">
         이 사이트는 국가유산청(<a href="https://www.khs.go.kr" target="_blank">https://www.khs.go.kr</a>)의 오픈API를 이용해서 만들었습니다.<br>
         - Made by 이태건 -<br>
+        <!-- ✨ 이메일 연락처 -->
+        <span class="contact-link" onclick="copyEmail()">📩 문의하기 (Contact)</span><br>
+        
         <div class="hits-badge">
             <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fexam1-beige.vercel.app&countColor=%232C3E50&style=flat" />
         </div>
@@ -173,10 +199,13 @@
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
         const IMAGE_URL = "http://www.khs.go.kr/cha/SearchImageOpenapi.do";
 
+        // ✨ 사용자 설정 이메일
+        const MY_EMAIL = "naturekr@gmail.com";
+
         let currentState = { mode: 'name', query: "", regionCode: "", subRegionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
         let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
+        let recentSearches = JSON.parse(localStorage.getItem('myHeritageRecent')) || ["화엄사", "삼층석탑", "비로자나불"];
 
-        // 1. 상위 지역 데이터 (시/도)
         const REGIONS = [
             { code: "11", name: "서울" }, { code: "21", name: "부산" }, { code: "22", name: "대구" },
             { code: "23", name: "인천" }, { code: "24", name: "광주" }, { code: "25", name: "대전" },
@@ -186,93 +215,25 @@
             { code: "38", name: "경남" }, { code: "50", name: "제주" }
         ];
 
-        // 2. ✨ [핵심] 제공해주신 데이터를 기반으로 생성한 완벽한 하위 지역 데이터 (API 호출 X)
+        // 전국 하위 지역 데이터 (내장)
         const SUB_REGIONS = {
-            "11": [ // 서울
-                {code:"11",name:"종로구"},{code:"12",name:"중구"},{code:"13",name:"용산구"},{code:"14",name:"성동구"},{code:"15",name:"동대문구"},
-                {code:"16",name:"성북구"},{code:"17",name:"도봉구"},{code:"18",name:"은평구"},{code:"19",name:"서대문구"},{code:"20",name:"마포구"},
-                {code:"21",name:"강서구"},{code:"22",name:"구로구"},{code:"23",name:"영등포구"},{code:"24",name:"동작구"},{code:"25",name:"관악구"},
-                {code:"26",name:"강남구"},{code:"27",name:"강동구"},{code:"28",name:"송파구"},{code:"29",name:"중랑구"},{code:"30",name:"노원구"},
-                {code:"31",name:"서초구"},{code:"32",name:"양천구"},{code:"33",name:"광진구"},{code:"34",name:"강북구"},{code:"35",name:"금천구"}
-            ],
-            "21": [ // 부산
-                {code:"11",name:"중구"},{code:"12",name:"서구"},{code:"13",name:"동구"},{code:"14",name:"영도구"},{code:"15",name:"부산진구"},
-                {code:"16",name:"동래구"},{code:"17",name:"남구"},{code:"18",name:"북구"},{code:"19",name:"해운대구"},{code:"20",name:"사하구"},
-                {code:"21",name:"금정구"},{code:"22",name:"강서구"},{code:"23",name:"연제구"},{code:"24",name:"수영구"},{code:"25",name:"사상구"},
-                {code:"26",name:"기장군"}
-            ],
-            "22": [ // 대구
-                {code:"11",name:"중구"},{code:"12",name:"동구"},{code:"13",name:"서구"},{code:"14",name:"남구"},{code:"15",name:"북구"},
-                {code:"16",name:"수성구"},{code:"17",name:"달서구"},{code:"18",name:"달성군"},{code:"32",name:"군위군"}
-            ],
-            "23": [ // 인천
-                {code:"11",name:"중구"},{code:"12",name:"동구"},{code:"15",name:"서구"},{code:"16",name:"남동구"},{code:"17",name:"연수구"},
-                {code:"18",name:"부평구"},{code:"19",name:"계양구"},{code:"20",name:"미추홀구"},{code:"30",name:"강화군"},{code:"31",name:"옹진군"}
-            ],
-            "24": [ // 광주
-                {code:"11",name:"동구"},{code:"12",name:"서구"},{code:"13",name:"북구"},{code:"14",name:"광산구"},{code:"15",name:"남구"}
-            ],
-            "25": [ // 대전
-                {code:"11",name:"동구"},{code:"12",name:"중구"},{code:"13",name:"서구"},{code:"14",name:"유성구"},{code:"15",name:"대덕구"}
-            ],
-            "26": [ // 울산
-                {code:"01",name:"남구"},{code:"02",name:"동구"},{code:"03",name:"북구"},{code:"04",name:"중구"},{code:"05",name:"울주군"}
-            ],
-            "45": [ // 세종 (세종은 하위 지역 없음)
-            ],
-            "31": [ // 경기
-                {code:"11",name:"수원시"},{code:"12",name:"성남시"},{code:"13",name:"의정부시"},{code:"14",name:"안양시"},{code:"15",name:"부천시"},
-                {code:"16",name:"광명시"},{code:"17",name:"안성시"},{code:"18",name:"동두천시"},{code:"19",name:"구리시"},{code:"20",name:"평택시"},
-                {code:"21",name:"과천시"},{code:"22",name:"안산시"},{code:"25",name:"오산시"},{code:"26",name:"의왕시"},{code:"27",name:"군포시"},
-                {code:"28",name:"시흥시"},{code:"30",name:"하남시"},{code:"31",name:"양주시"},{code:"35",name:"화성시"},{code:"37",name:"파주시"},
-                {code:"39",name:"광주시"},{code:"40",name:"연천군"},{code:"41",name:"포천시"},{code:"42",name:"가평군"},{code:"43",name:"양평군"},
-                {code:"44",name:"이천시"},{code:"45",name:"용인시"},{code:"47",name:"김포시"},{code:"50",name:"고양시"},{code:"51",name:"남양주시"},
-                {code:"70",name:"여주시"}
-            ],
-            "32": [ // 강원
-                {code:"11",name:"춘천시"},{code:"12",name:"원주시"},{code:"13",name:"강릉시"},{code:"14",name:"동해시"},{code:"15",name:"태백시"},
-                {code:"16",name:"속초시"},{code:"17",name:"삼척시"},{code:"32",name:"홍천군"},{code:"33",name:"횡성군"},{code:"35",name:"영월군"},
-                {code:"36",name:"평창군"},{code:"37",name:"정선군"},{code:"38",name:"철원군"},{code:"39",name:"화천군"},{code:"40",name:"양구군"},
-                {code:"41",name:"인제군"},{code:"42",name:"고성군"},{code:"43",name:"양양군"},{code:"44",name:"명주군"}
-            ],
-            "33": [ // 충북
-                {code:"12",name:"충주시"},{code:"13",name:"제천시"},{code:"20",name:"청주시"},{code:"32",name:"보은군"},{code:"33",name:"옥천군"},
-                {code:"34",name:"영동군"},{code:"35",name:"진천군"},{code:"36",name:"괴산군"},{code:"37",name:"음성군"},{code:"40",name:"단양군"},
-                {code:"42",name:"증평군"}
-            ],
-            "34": [ // 충남
-                {code:"11",name:"천안시"},{code:"12",name:"공주시"},{code:"15",name:"서산시"},{code:"16",name:"아산시"},{code:"17",name:"보령시"},
-                {code:"18",name:"계룡시"},{code:"31",name:"금산군"},{code:"35",name:"논산시"},{code:"36",name:"부여군"},{code:"37",name:"서천군"},
-                {code:"39",name:"청양군"},{code:"40",name:"홍성군"},{code:"41",name:"예산군"},{code:"43",name:"당진시"},{code:"46",name:"태안군"}
-            ],
-            "35": [ // 전북
-                {code:"11",name:"전주시"},{code:"12",name:"군산시"},{code:"15",name:"남원시"},{code:"16",name:"김제시"},{code:"17",name:"정읍시"},
-                {code:"18",name:"익산시"},{code:"31",name:"완주군"},{code:"32",name:"진안군"},{code:"33",name:"무주군"},{code:"34",name:"장수군"},
-                {code:"35",name:"임실군"},{code:"37",name:"순창군"},{code:"39",name:"고창군"},{code:"40",name:"부안군"}
-            ],
-            "36": [ // 전남
-                {code:"11",name:"목포시"},{code:"12",name:"여수시"},{code:"13",name:"순천시"},{code:"14",name:"나주시"},{code:"15",name:"여천시"},
-                {code:"17",name:"광양시"},{code:"32",name:"담양군"},{code:"33",name:"곡성군"},{code:"34",name:"구례군"},{code:"36",name:"여천군"},
-                {code:"38",name:"고흥군"},{code:"39",name:"보성군"},{code:"40",name:"화순군"},{code:"41",name:"장흥군"},{code:"42",name:"강진군"},
-                {code:"43",name:"해남군"},{code:"44",name:"영암군"},{code:"45",name:"무안군"},{code:"47",name:"함평군"},{code:"48",name:"영광군"},
-                {code:"49",name:"장성군"},{code:"50",name:"완도군"},{code:"51",name:"진도군"},{code:"52",name:"신안군"},{code:"53",name:"승주군"}
-            ],
-            "37": [ // 경북
-                {code:"11",name:"포항시"},{code:"12",name:"경주시"},{code:"13",name:"김천시"},{code:"14",name:"안동시"},{code:"15",name:"구미시"},
-                {code:"16",name:"영주시"},{code:"17",name:"영천시"},{code:"18",name:"상주시"},{code:"20",name:"경산시"},{code:"21",name:"문경시"},
-                {code:"33",name:"의성군"},{code:"35",name:"청송군"},{code:"36",name:"영양군"},{code:"37",name:"영덕군"},{code:"42",name:"청도군"},
-                {code:"43",name:"고령군"},{code:"44",name:"성주군"},{code:"45",name:"칠곡군"},{code:"50",name:"예천군"},{code:"52",name:"봉화군"},
-                {code:"53",name:"울진군"},{code:"54",name:"울릉군"}
-            ],
-            "38": [ // 경남
-                {code:"13",name:"진주시"},{code:"18",name:"김해시"},{code:"22",name:"밀양시"},{code:"25",name:"통영시"},{code:"26",name:"거제시"},
-                {code:"27",name:"사천시"},{code:"32",name:"의령군"},{code:"33",name:"함안군"},{code:"34",name:"창녕군"},{code:"36",name:"양산시"},
-                {code:"39",name:"의창군"},{code:"42",name:"고성군"},{code:"44",name:"남해군"},{code:"45",name:"하동군"},{code:"46",name:"산청군"},
-                {code:"47",name:"함양군"},{code:"48",name:"거창군"},{code:"49",name:"합천군"},{code:"50",name:"창원시"}
-            ],
-            "50": [ // 제주
-                {code:"01",name:"제주시"},{code:"02",name:"서귀포시"},{code:"03",name:"제주도일원"}
-            ]
+            "11": [{code:"11",name:"종로구"},{code:"12",name:"중구"},{code:"13",name:"용산구"},{code:"14",name:"성동구"},{code:"15",name:"동대문구"},{code:"16",name:"성북구"},{code:"17",name:"도봉구"},{code:"18",name:"은평구"},{code:"19",name:"서대문구"},{code:"20",name:"마포구"},{code:"21",name:"강서구"},{code:"22",name:"구로구"},{code:"23",name:"영등포구"},{code:"24",name:"동작구"},{code:"25",name:"관악구"},{code:"26",name:"강남구"},{code:"27",name:"강동구"},{code:"28",name:"송파구"},{code:"29",name:"중랑구"},{code:"30",name:"노원구"},{code:"31",name:"서초구"},{code:"32",name:"양천구"},{code:"33",name:"광진구"},{code:"34",name:"강북구"},{code:"35",name:"금천구"}],
+            "21": [{code:"11",name:"중구"},{code:"12",name:"서구"},{code:"13",name:"동구"},{code:"14",name:"영도구"},{code:"15",name:"부산진구"},{code:"16",name:"동래구"},{code:"17",name:"남구"},{code:"18",name:"북구"},{code:"19",name:"해운대구"},{code:"20",name:"사하구"},{code:"21",name:"금정구"},{code:"22",name:"강서구"},{code:"23",name:"연제구"},{code:"24",name:"수영구"},{code:"25",name:"사상구"},{code:"26",name:"기장군"}],
+            "22": [{code:"11",name:"중구"},{code:"12",name:"동구"},{code:"13",name:"서구"},{code:"14",name:"남구"},{code:"15",name:"북구"},{code:"16",name:"수성구"},{code:"17",name:"달서구"},{code:"31",name:"달성군"},{code:"32",name:"군위군"}],
+            "23": [{code:"11",name:"중구"},{code:"12",name:"동구"},{code:"13",name:"미추홀구"},{code:"14",name:"연수구"},{code:"15",name:"남동구"},{code:"16",name:"부평구"},{code:"17",name:"계양구"},{code:"18",name:"서구"},{code:"31",name:"강화군"},{code:"32",name:"옹진군"}],
+            "24": [{code:"11",name:"동구"},{code:"12",name:"서구"},{code:"13",name:"남구"},{code:"14",name:"북구"},{code:"15",name:"광산구"}],
+            "25": [{code:"11",name:"동구"},{code:"12",name:"중구"},{code:"13",name:"서구"},{code:"14",name:"유성구"},{code:"15",name:"대덕구"}],
+            "26": [{code:"11",name:"중구"},{code:"12",name:"남구"},{code:"13",name:"동구"},{code:"14",name:"북구"},{code:"31",name:"울주군"}],
+            "45": [],
+            "31": [{code:"11",name:"수원시"},{code:"12",name:"성남시"},{code:"13",name:"의정부시"},{code:"14",name:"안양시"},{code:"15",name:"부천시"},{code:"16",name:"광명시"},{code:"17",name:"안성시"},{code:"18",name:"동두천시"},{code:"19",name:"구리시"},{code:"20",name:"평택시"},{code:"21",name:"과천시"},{code:"22",name:"안산시"},{code:"25",name:"오산시"},{code:"26",name:"의왕시"},{code:"27",name:"군포시"},{code:"28",name:"시흥시"},{code:"30",name:"하남시"},{code:"31",name:"양주시"},{code:"35",name:"화성시"},{code:"37",name:"파주시"},{code:"39",name:"광주시"},{code:"40",name:"연천군"},{code:"41",name:"포천시"},{code:"42",name:"가평군"},{code:"43",name:"양평군"},{code:"44",name:"이천시"},{code:"45",name:"용인시"},{code:"47",name:"김포시"},{code:"50",name:"고양시"},{code:"51",name:"남양주시"},{code:"70",name:"여주시"}],
+            "32": [{code:"11",name:"춘천시"},{code:"12",name:"원주시"},{code:"13",name:"강릉시"},{code:"14",name:"동해시"},{code:"15",name:"태백시"},{code:"16",name:"속초시"},{code:"17",name:"삼척시"},{code:"31",name:"홍천군"},{code:"32",name:"횡성군"},{code:"33",name:"영월군"},{code:"34",name:"평창군"},{code:"35",name:"정선군"},{code:"36",name:"철원군"},{code:"37",name:"화천군"},{code:"38",name:"양구군"},{code:"39",name:"인제군"},{code:"40",name:"고성군"},{code:"41",name:"양양군"}],
+            "33": [{code:"11",name:"청주시"},{code:"12",name:"충주시"},{code:"13",name:"제천시"},{code:"31",name:"보은군"},{code:"32",name:"옥천군"},{code:"33",name:"영동군"},{code:"34",name:"진천군"},{code:"35",name:"괴산군"},{code:"36",name:"음성군"},{code:"37",name:"단양군"},{code:"38",name:"증평군"}],
+            "34": [{code:"11",name:"천안시"},{code:"12",name:"공주시"},{code:"13",name:"보령시"},{code:"14",name:"아산시"},{code:"15",name:"서산시"},{code:"16",name:"논산시"},{code:"17",name:"계룡시"},{code:"18",name:"당진시"},{code:"31",name:"금산군"},{code:"32",name:"부여군"},{code:"33",name:"서천군"},{code:"34",name:"청양군"},{code:"35",name:"홍성군"},{code:"36",name:"예산군"},{code:"37",name:"태안군"}],
+            "35": [{code:"11",name:"전주시"},{code:"12",name:"군산시"},{code:"13",name:"익산시"},{code:"14",name:"정읍시"},{code:"15",name:"남원시"},{code:"16",name:"김제시"},{code:"31",name:"완주군"},{code:"32",name:"진안군"},{code:"33",name:"무주군"},{code:"34",name:"장수군"},{code:"35",name:"임실군"},{code:"36",name:"순창군"},{code:"37",name:"고창군"},{code:"38",name:"부안군"}],
+            "36": [{code:"11",name:"목포시"},{code:"12",name:"여수시"},{code:"13",name:"순천시"},{code:"14",name:"나주시"},{code:"15",name:"광양시"},{code:"16",name:"담양군"},{code:"17",name:"곡성군"},{code:"18",name:"구례군"},{code:"19",name:"고흥군"},{code:"20",name:"보성군"},{code:"21",name:"화순군"},{code:"22",name:"장흥군"},{code:"23",name:"강진군"},{code:"24",name:"해남군"},{code:"25",name:"영암군"},{code:"26",name:"무안군"},{code:"27",name:"함평군"},{code:"28",name:"영광군"},{code:"29",name:"장성군"},{code:"30",name:"완도군"},{code:"31",name:"진도군"},{code:"32",name:"신안군"}],
+            "37": [{code:"11",name:"포항시"},{code:"12",name:"경주시"},{code:"13",name:"김천시"},{code:"14",name:"안동시"},{code:"15",name:"구미시"},{code:"16",name:"영주시"},{code:"17",name:"영천시"},{code:"18",name:"상주시"},{code:"20",name:"경산시"},{code:"21",name:"문경시"},{code:"31",name:"의성군"},{code:"32",name:"청송군"},{code:"33",name:"영양군"},{code:"34",name:"영덕군"},{code:"35",name:"청도군"},{code:"36",name:"고령군"},{code:"37",name:"성주군"},{code:"38",name:"칠곡군"},{code:"39",name:"예천군"},{code:"40",name:"봉화군"},{code:"41",name:"울진군"},{code:"42",name:"울릉군"}],
+            "38": [{code:"11",name:"창원시"},{code:"12",name:"진주시"},{code:"13",name:"통영시"},{code:"14",name:"사천시"},{code:"15",name:"김해시"},{code:"16",name:"밀양시"},{code:"17",name:"거제시"},{code:"18",name:"양산시"},{code:"31",name:"의령군"},{code:"32",name:"함안군"},{code:"33",name:"창녕군"},{code:"34",name:"고성군"},{code:"35",name:"남해군"},{code:"36",name:"하동군"},{code:"37",name:"산청군"},{code:"38",name:"함양군"},{code:"39",name:"거창군"},{code:"40",name:"합천군"}],
+            "50": [{code:"01",name:"제주시"},{code:"02",name:"서귀포시"}]
         };
 
         const CATEGORIES = [
@@ -287,7 +248,37 @@
         window.onload = function() {
             renderRegionGrid();
             createFilterTabs(""); 
+            renderRecentSearches();
         };
+
+        function copyEmail() {
+            navigator.clipboard.writeText(MY_EMAIL).then(() => {
+                alert(`📧 이메일 주소가 복사되었습니다!\n(${MY_EMAIL})`);
+            });
+        }
+
+        function renderRecentSearches() {
+            const area = document.getElementById('recent-search-area');
+            let html = `<span class="recent-label">최근:</span>`;
+            recentSearches.forEach(term => {
+                html += `<span class="recent-chip" onclick="clickRecentSearch('${term}')">${term}</span>`;
+            });
+            area.innerHTML = html;
+        }
+
+        function clickRecentSearch(term) {
+            document.getElementById('searchInput').value = term;
+            resetAndSearch();
+        }
+
+        function saveRecentSearch(term) {
+            if(!term) return;
+            recentSearches = recentSearches.filter(t => t !== term);
+            recentSearches.unshift(term);
+            if(recentSearches.length > 5) recentSearches.pop(); 
+            localStorage.setItem('myHeritageRecent', JSON.stringify(recentSearches));
+            renderRecentSearches();
+        }
 
         function switchMode(mode) {
             currentState.mode = mode;
@@ -318,7 +309,6 @@
             grid.innerHTML = html;
         }
 
-        // ✨ [수정됨] 이제 API 호출 없이 내장 데이터(SUB_REGIONS)를 바로 보여줍니다.
         function selectMainRegion(code, btn) {
             document.getElementById('region-main-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -328,15 +318,12 @@
             currentState.pageIndex = 1;
             
             renderSubRegions(code);
-            // 상위 지역 선택 시 자동으로 '전체' 검색
             startSearch();
         }
 
         function renderSubRegions(mainCode) {
             const subArea = document.getElementById('sub-region-area');
             const subScroll = document.getElementById('region-sub-scroll');
-            
-            // 하드코딩된 데이터에서 가져오기
             const subList = SUB_REGIONS[mainCode];
 
             if (!subList || subList.length === 0) {
@@ -345,9 +332,7 @@
             }
 
             subArea.style.display = 'block';
-            // '전체' 버튼은 지역 코드 파라미터 없이 상위 지역만 검색
             let html = `<button class="chip-btn active" onclick="selectSubRegion('', this)">전체</button>`;
-            
             subList.forEach(sub => {
                 html += `<button class="chip-btn" onclick="selectSubRegion('${sub.code}', this)">${sub.name}</button>`;
             });
@@ -366,6 +351,8 @@
             const query = document.getElementById('searchInput').value.trim();
             if (!query) { alert("검색어를 입력하세요."); return; }
             currentState = { mode: 'name', query: query, regionCode: "", subRegionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
+            
+            saveRecentSearch(query);
             startSearch();
         }
 
@@ -386,7 +373,6 @@
                     url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
                     url += `&ccbaCtcd=${currentState.regionCode}`;
-                    // 하위 지역 코드가 있으면 추가 (ccbaLcto)
                     if(currentState.subRegionCode) url += `&ccbaLcto=${currentState.subRegionCode}`;
                 }
 
@@ -466,7 +452,6 @@
                     url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
                     url += `&ccbaCtcd=${currentState.regionCode}`;
-                    // 하위 지역 필터 추가
                     if(currentState.subRegionCode) url += `&ccbaLcto=${currentState.subRegionCode}`;
                 }
 
