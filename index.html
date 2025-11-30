@@ -191,10 +191,24 @@
             { code: "31", name: "문화유산자료" }, { code: "80", name: "이북5도" }
         ];
 
+   // [Exam 1 프로젝트 index.html 수정]
         window.onload = function() {
             renderRegionGrid();
             createFilterTabs(""); 
             renderRecentSearches();
+
+            // ✨ 이 부분이 핵심입니다! 외부에서 온 검색어 처리
+            const params = new URLSearchParams(window.location.search);
+            const sharedQuery = params.get('q');
+            
+            if (sharedQuery) {
+                const decodedQuery = decodeURIComponent(sharedQuery); // 한글 깨짐 방지
+                document.getElementById('searchInput').value = decodedQuery;
+                // 약간의 딜레이를 주고 검색 실행 (데이터 로딩 안정성 확보)
+                setTimeout(() => {
+                    searchByName();
+                }, 100);
+            }
         };
 
         function copyEmail() {
