@@ -5,61 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
-    <meta name="referrer" content="origin">
+    <meta name="description" content="우리나라 국가유산의 위치와 상세 정보를 한눈에 확인하세요.">
+    <meta property="og:title" content="국가유산 지도 검색">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <!-- 네이버 지도 API -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=q9guv183ig"></script>
     
     <style>
-        /* 기존 스타일 유지 + 내 주변 버튼 스타일 추가 */
-        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; padding-bottom: 80px; }
-        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        /* 기본 설정 */
+        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; padding-bottom: 100px; color: #333; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; letter-spacing: -1px; cursor: pointer; }
         
-        .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
-        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        button { padding: 15px 20px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-        button:hover { background-color: #34495e; }
+        /* 3단 탭 디자인 */
+        .mode-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .mode-tab { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-weight: bold; color: #888; background: none; border: none; font-size: 1rem; transition: 0.2s; white-space: nowrap; }
+        .mode-tab.active { color: #2c3e50; border-bottom: 3px solid #2c3e50; margin-bottom: -2px; }
 
-        /* ✨ 내 주변 버튼 스타일 */
-        .gps-btn { background-color: #27ae60; width: 100%; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* 검색 컨테이너들 */
+        .search-container { display: none; padding: 10px 0; }
+        .search-container.active { display: block; }
+
+        /* 이름 검색창 */
+        .search-box { display: flex; gap: 10px; margin-bottom: 10px; }
+        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #2c3e50; }
+        button.search-btn { padding: 15px 20px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        
+        /* 내 주변 버튼 */
+        .gps-btn { background-color: #27ae60; width: 100%; padding: 15px; border-radius: 8px; color: white; font-weight: bold; border: none; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .gps-btn:hover { background-color: #219150; }
-        .gps-btn.active { background-color: #e67e22; }
 
-        #result-area { display: flex; flex-direction: column; gap: 15px; }
-        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
-        .item:hover { transform: translateY(-3px); border-color: #03c75a; }
+        /* 지역 선택 칩 */
+        .region-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
+        .chip-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.95em; transition: 0.2s; }
+        .chip-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
+
+        /* 하위 지역 */
+        #sub-region-area { display: none; border-top: 1px dashed #ddd; padding-top: 15px; margin-bottom: 20px; text-align: center; background-color: #eef2f5; padding: 15px; border-radius: 8px; }
+        .sub-region-title { font-size: 0.9em; color: #2c3e50; margin-bottom: 10px; font-weight: bold; display: block; }
+
+        /* 리스트 아이템 */
+        #result-area { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .item { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
+        .item:hover { transform: translateY(-3px); border-color: #2c3e50; }
         
-        .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #666; }
+        .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
         .badge.국보 { background-color: #d35400; }
         .badge.보물 { background-color: #2980b9; }
         .badge.사적 { background-color: #27ae60; }
         
-        /* ✨ 거리 표시 뱃지 */
-        .dist-badge { font-size: 0.85em; color: #e67e22; font-weight: bold; margin-left: auto; display: none; }
-        .dist-badge.show { display: block; }
+        .dist-badge { font-size: 0.9em; color: #e67e22; font-weight: bold; margin-left: auto; }
+        
+        .item-title { font-size: 1.2em; font-weight: bold; color: #333; }
+        .item-info { font-size: 0.9em; color: #7f8c8d; }
 
-        .item-title { font-size: 1.3em; font-weight: bold; color: #333; }
-        .item-info { font-size: 0.95em; color: #7f8c8d; }
-
-        .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; }
-        .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 15px; }
-        .detail-desc { line-height: 1.7; color: #444; margin-bottom: 15px; }
-        .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; }
-        .loading { text-align: center; color: #888; padding: 20px; }
+        .detail-view { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #eee; display: none; }
+        .detail-img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+        .detail-desc { line-height: 1.6; color: #444; margin-top: 10px; word-break: keep-all; }
+        .map-container { width: 100%; height: 300px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; }
+        .loading { text-align: center; color: #888; padding: 30px; }
     </style>
 </head>
 <body>
 
-    <h1>🏛️ 국가유산 지도 검색</h1>
+    <h1 onclick="location.reload()">🏛️ 국가유산 지도 검색</h1>
     
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) searchHeritage()">
-        <button onclick="searchHeritage()">검색</button>
+    <!-- ✨ 3단 탭 메뉴 -->
+    <div class="mode-tabs">
+        <button class="mode-tab active" onclick="switchMode('name')">이름으로 찾기</button>
+        <button class="mode-tab" onclick="switchMode('region')">지역으로 찾기</button>
+        <button class="mode-tab" onclick="switchMode('nearby')">📍 내 근처 찾기</button>
     </div>
 
-    <!-- ✨ 내 주변 버튼 추가 -->
-    <button onclick="sortByLocation()" class="gps-btn" id="gpsBtn">
-        📍 내 주변 순으로 정렬하기
-    </button>
+    <!-- 1. 이름 검색 -->
+    <div id="search-name" class="search-container active">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) searchHeritage()">
+            <button class="search-btn" onclick="searchHeritage()">검색</button>
+        </div>
+    </div>
+
+    <!-- 2. 지역 검색 -->
+    <div id="search-region" class="search-container">
+        <div id="region-main-scroll" class="region-scroll-area"></div>
+        <div id="sub-region-area">
+            <span class="sub-region-title">▼ 상세 지역 선택</span>
+            <div id="region-sub-scroll" class="region-scroll-area"></div>
+        </div>
+    </div>
+
+    <!-- 3. 내 근처 찾기 -->
+    <div id="search-nearby" class="search-container">
+        <p style="text-align:center; color:#666; margin-bottom:15px; font-size:0.9em;">
+            현재 위치를 확인하여 가까운 문화유산을 찾아줍니다.<br>
+            (기본적으로 주요 문화유산을 불러온 뒤 거리순으로 정렬합니다)
+        </p>
+        <button onclick="sortByLocation()" class="gps-btn" id="gpsBtn">
+            📡 내 위치 확인하고 검색하기
+        </button>
+    </div>
 
     <div id="result-area"></div>
 
@@ -68,29 +114,124 @@
         const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
 
-        let currentItems = []; // 현재 검색된 아이템들 저장소
+        let currentItems = [];
+        let currentMode = 'name';
 
-        async function searchHeritage() {
-            const query = document.getElementById('searchInput').value;
-            const resultArea = document.getElementById('result-area');
-            const gpsBtn = document.getElementById('gpsBtn');
+        // 지역 데이터 (내장)
+        const REGIONS = [
+            { code: "11", name: "서울" }, { code: "21", name: "부산" }, { code: "22", name: "대구" },
+            { code: "23", name: "인천" }, { code: "24", name: "광주" }, { code: "25", name: "대전" },
+            { code: "26", name: "울산" }, { code: "45", name: "세종" }, { code: "31", name: "경기" },
+            { code: "32", name: "강원" }, { code: "33", name: "충북" }, { code: "34", name: "충남" },
+            { code: "35", name: "전북" }, { code: "36", name: "전남" }, { code: "37", name: "경북" },
+            { code: "38", name: "경남" }, { code: "50", name: "제주" }
+        ];
+
+        const SUB_REGIONS = {
+            "11": [{code:"11",name:"종로구"},{code:"12",name:"중구"},{code:"13",name:"용산구"},{code:"14",name:"성동구"},{code:"15",name:"동대문구"},{code:"16",name:"성북구"},{code:"17",name:"도봉구"},{code:"18",name:"은평구"},{code:"19",name:"서대문구"},{code:"20",name:"마포구"},{code:"21",name:"강서구"},{code:"22",name:"구로구"},{code:"23",name:"영등포구"},{code:"24",name:"동작구"},{code:"25",name:"관악구"},{code:"26",name:"강남구"},{code:"27",name:"강동구"},{code:"28",name:"송파구"},{code:"29",name:"중랑구"},{code:"30",name:"노원구"},{code:"31",name:"서초구"},{code:"32",name:"양천구"},{code:"33",name:"광진구"},{code:"34",name:"강북구"},{code:"35",name:"금천구"}],
+            "21": [{code:"11",name:"중구"},{code:"12",name:"서구"},{code:"13",name:"동구"},{code:"14",name:"영도구"},{code:"15",name:"부산진구"},{code:"16",name:"동래구"},{code:"17",name:"남구"},{code:"18",name:"북구"},{code:"19",name:"해운대구"},{code:"20",name:"사하구"},{code:"21",name:"금정구"},{code:"22",name:"강서구"},{code:"23",name:"연제구"},{code:"24",name:"수영구"},{code:"25",name:"사상구"},{code:"26",name:"기장군"}],
+            "22": [{code:"11",name:"중구"},{code:"12",name:"동구"},{code:"13",name:"서구"},{code:"14",name:"남구"},{code:"15",name:"북구"},{code:"16",name:"수성구"},{code:"17",name:"달서구"},{code:"31",name:"달성군"},{code:"32",name:"군위군"}],
+            "23": [{code:"11",name:"중구"},{code:"12",name:"동구"},{code:"20",name:"미추홀구"},{code:"15",name:"서구"},{code:"16",name:"남동구"},{code:"17",name:"연수구"},{code:"18",name:"부평구"},{code:"19",name:"계양구"},{code:"30",name:"강화군"},{code:"31",name:"옹진군"}],
+            "24": [{code:"11",name:"동구"},{code:"12",name:"서구"},{code:"13",name:"북구"},{code:"14",name:"광산구"},{code:"15",name:"남구"}],
+            "25": [{code:"11",name:"동구"},{code:"12",name:"중구"},{code:"13",name:"서구"},{code:"14",name:"유성구"},{code:"15",name:"대덕구"}],
+            "26": [{code:"01",name:"남구"},{code:"02",name:"동구"},{code:"03",name:"북구"},{code:"04",name:"중구"},{code:"05",name:"울주군"}],
+            "45": [],
+            "31": [{code:"11",name:"수원시"},{code:"12",name:"성남시"},{code:"13",name:"의정부시"},{code:"14",name:"안양시"},{code:"15",name:"부천시"},{code:"16",name:"광명시"},{code:"17",name:"안성시"},{code:"18",name:"동두천시"},{code:"19",name:"구리시"},{code:"20",name:"평택시"},{code:"21",name:"과천시"},{code:"22",name:"안산시"},{code:"25",name:"오산시"},{code:"26",name:"의왕시"},{code:"27",name:"군포시"},{code:"28",name:"시흥시"},{code:"30",name:"하남시"},{code:"31",name:"양주시"},{code:"70",name:"여주시"},{code:"35",name:"화성시"},{code:"37",name:"파주시"},{code:"39",name:"광주시"},{code:"40",name:"연천군"},{code:"41",name:"포천시"},{code:"42",name:"가평군"},{code:"43",name:"양평군"},{code:"44",name:"이천시"},{code:"45",name:"용인시"},{code:"47",name:"김포시"},{code:"50",name:"고양시"},{code:"51",name:"남양주시"}],
+            "32": [{code:"11",name:"춘천시"},{code:"12",name:"원주시"},{code:"13",name:"강릉시"},{code:"14",name:"동해시"},{code:"15",name:"태백시"},{code:"16",name:"속초시"},{code:"17",name:"삼척시"},{code:"32",name:"홍천군"},{code:"33",name:"횡성군"},{code:"35",name:"영월군"},{code:"36",name:"평창군"},{code:"37",name:"정선군"},{code:"38",name:"철원군"},{code:"39",name:"화천군"},{code:"40",name:"양구군"},{code:"41",name:"인제군"},{code:"42",name:"고성군"},{code:"43",name:"양양군"}],
+            "33": [{code:"20",name:"청주시"},{code:"12",name:"충주시"},{code:"13",name:"제천시"},{code:"32",name:"보은군"},{code:"33",name:"옥천군"},{code:"34",name:"영동군"},{code:"35",name:"진천군"},{code:"36",name:"괴산군"},{code:"37",name:"음성군"},{code:"40",name:"단양군"},{code:"42",name:"증평군"}],
+            "34": [{code:"11",name:"천안시"},{code:"12",name:"공주시"},{code:"15",name:"서산시"},{code:"16",name:"아산시"},{code:"17",name:"보령시"},{code:"18",name:"계룡시"},{code:"31",name:"금산군"},{code:"35",name:"논산시"},{code:"36",name:"부여군"},{code:"37",name:"서천군"},{code:"39",name:"청양군"},{code:"40",name:"홍성군"},{code:"41",name:"예산군"},{code:"43",name:"당진시"},{code:"46",name:"태안군"}],
+            "35": [{code:"11",name:"전주시"},{code:"12",name:"군산시"},{code:"15",name:"남원시"},{code:"16",name:"김제시"},{code:"17",name:"정읍시"},{code:"18",name:"익산시"},{code:"31",name:"완주군"},{code:"32",name:"진안군"},{code:"33",name:"무주군"},{code:"34",name:"장수군"},{code:"35",name:"임실군"},{code:"37",name:"순창군"},{code:"39",name:"고창군"},{code:"40",name:"부안군"}],
+            "36": [{code:"11",name:"목포시"},{code:"12",name:"여수시"},{code:"13",name:"순천시"},{code:"14",name:"나주시"},{code:"17",name:"광양시"},{code:"32",name:"담양군"},{code:"33",name:"곡성군"},{code:"34",name:"구례군"},{code:"38",name:"고흥군"},{code:"39",name:"보성군"},{code:"40",name:"화순군"},{code:"41",name:"장흥군"},{code:"42",name:"강진군"},{code:"43",name:"해남군"},{code:"44",name:"영암군"},{code:"45",name:"무안군"},{code:"47",name:"함평군"},{code:"48",name:"영광군"},{code:"49",name:"장성군"},{code:"50",name:"완도군"},{code:"51",name:"진도군"},{code:"52",name:"신안군"}],
+            "37": [{code:"11",name:"포항시"},{code:"12",name:"경주시"},{code:"13",name:"김천시"},{code:"14",name:"안동시"},{code:"15",name:"구미시"},{code:"16",name:"영주시"},{code:"17",name:"영천시"},{code:"18",name:"상주시"},{code:"20",name:"경산시"},{code:"21",name:"문경시"},{code:"33",name:"의성군"},{code:"35",name:"청송군"},{code:"36",name:"영양군"},{code:"37",name:"영덕군"},{code:"42",name:"청도군"},{code:"43",name:"고령군"},{code:"44",name:"성주군"},{code:"45",name:"칠곡군"},{code:"50",name:"예천군"},{code:"52",name:"봉화군"},{code:"53",name:"울진군"},{code:"54",name:"울릉군"}],
+            "38": [{code:"13",name:"진주시"},{code:"50",name:"창원시"},{code:"18",name:"김해시"},{code:"22",name:"밀양시"},{code:"25",name:"통영시"},{code:"26",name:"거제시"},{code:"27",name:"사천시"},{code:"32",name:"의령군"},{code:"33",name:"함안군"},{code:"34",name:"창녕군"},{code:"36",name:"양산시"},{code:"39",name:"의창군"},{code:"42",name:"고성군"},{code:"44",name:"남해군"},{code:"45",name:"하동군"},{code:"46",name:"산청군"},{code:"47",name:"함양군"},{code:"48",name:"거창군"},{code:"49",name:"합천군"}],
+            "50": [{code:"01",name:"제주시"},{code:"02",name:"서귀포시"}]
+        };
+
+        window.onload = function() {
+            renderRegionGrid();
+        };
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.search-container').forEach(c => c.classList.remove('active'));
             
-            if(!query) { alert("검색어를 입력하세요."); return; }
+            if(mode === 'name') {
+                document.querySelectorAll('.mode-tab')[0].classList.add('active');
+                document.getElementById('search-name').classList.add('active');
+            } else if(mode === 'region') {
+                document.querySelectorAll('.mode-tab')[1].classList.add('active');
+                document.getElementById('search-region').classList.add('active');
+            } else if(mode === 'nearby') {
+                document.querySelectorAll('.mode-tab')[2].classList.add('active');
+                document.getElementById('search-nearby').classList.add('active');
+            }
+            
+            document.getElementById('result-area').innerHTML = "";
+            document.getElementById('sub-region-area').style.display = 'none';
+        }
 
+        function renderRegionGrid() {
+            const grid = document.getElementById('region-main-scroll');
+            let html = "";
+            REGIONS.forEach(r => {
+                html += `<button class="chip-btn" onclick="selectMainRegion('${r.code}', this)">${r.name}</button>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function selectMainRegion(code, btn) {
+            document.getElementById('region-main-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            renderSubRegions(code);
+            // 시도 선택 시 바로 전체 검색
+            searchHeritage(null, code, null);
+        }
+
+        function renderSubRegions(mainCode) {
+            const subArea = document.getElementById('sub-region-area');
+            const subScroll = document.getElementById('region-sub-scroll');
+            const subList = SUB_REGIONS[mainCode];
+
+            if (!subList || subList.length === 0) {
+                subArea.style.display = 'none';
+                return;
+            }
+
+            subArea.style.display = 'block';
+            let html = `<button class="chip-btn active" onclick="selectSubRegion('', '${mainCode}', this)">전체</button>`;
+            subList.forEach(sub => {
+                html += `<button class="chip-btn" onclick="selectSubRegion('${sub.code}', '${mainCode}', this)">${sub.name}</button>`;
+            });
+            subScroll.innerHTML = html;
+        }
+
+        function selectSubRegion(subCode, mainCode, btn) {
+            document.getElementById('region-sub-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // 시군구 검색
+            searchHeritage(null, mainCode, subCode);
+        }
+
+        async function searchHeritage(query, ctcd, lcto) {
+            const resultArea = document.getElementById('result-area');
             resultArea.innerHTML = '<div class="loading">데이터를 불러오는 중입니다...</div>';
-            gpsBtn.classList.remove('active');
-            gpsBtn.innerText = "📍 내 주변 순으로 정렬하기";
 
             try {
-                const targetUrl = `${LIST_URL}?ccbaMnm1=${encodeURIComponent(query)}`;
+                let targetUrl = `${LIST_URL}?pageUnit=50`; // 넉넉하게 50개
+                
+                if (query) targetUrl += `&ccbaMnm1=${encodeURIComponent(query)}`;
+                if (ctcd) targetUrl += `&ccbaCtcd=${ctcd}`;
+                if (lcto) targetUrl += `&ccbaLcto=${lcto}`;
+
                 const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
                 const str = await response.text();
-                
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(str, "text/xml");
                 const items = xml.getElementsByTagName("item");
 
-                resultArea.innerHTML = "";
                 currentItems = []; // 초기화
 
                 if (items.length === 0) {
@@ -98,7 +239,6 @@
                     return;
                 }
 
-                // 데이터를 배열로 변환해서 저장 (정렬을 위해)
                 for (let item of items) {
                     const data = {
                         name: item.getElementsByTagName("ccbaMnm1")[0].textContent,
@@ -108,12 +248,12 @@
                         asno: item.getElementsByTagName("ccbaAsno")[0].textContent,
                         lat: parseFloat(item.getElementsByTagName("latitude")[0]?.textContent || 0),
                         lng: parseFloat(item.getElementsByTagName("longitude")[0]?.textContent || 0),
-                        distance: null // 거리 계산용
+                        distance: null
                     };
                     currentItems.push(data);
                 }
 
-                renderList(currentItems); // 화면 그리기
+                renderList(currentItems);
 
             } catch (error) {
                 console.error(error);
@@ -121,7 +261,6 @@
             }
         }
 
-        // ✨ 화면 그리기 함수 (분리됨)
         function renderList(items) {
             const resultArea = document.getElementById('result-area');
             resultArea.innerHTML = "";
@@ -130,14 +269,13 @@
                 const div = document.createElement("div");
                 div.className = "item";
                 
-                // 거리 뱃지 표시 여부
                 const distHtml = data.distance 
-                    ? `<span class="dist-badge show">📏 ${data.distance.toFixed(1)}km</span>` 
-                    : `<span class="dist-badge"></span>`;
+                    ? `<span class="dist-badge">📏 ${data.distance.toFixed(1)}km</span>` 
+                    : "";
 
                 div.innerHTML = `
                     <div class="item-header">
-                        <span class="badge ${data.type}">${data.type}</span>
+                        <span class="badge ${data.type.split(' ')[0]}">${data.type}</span>
                         <span class="item-title">${data.name}</span>
                         ${distHtml}
                     </div>
@@ -154,13 +292,8 @@
             });
         }
 
-        // ✨ 내 위치 기반 정렬 함수
+        // ✨ [내 주변 찾기 핵심 로직]
         function sortByLocation() {
-            if (currentItems.length === 0) {
-                alert("먼저 검색을 해주세요.");
-                return;
-            }
-
             const btn = document.getElementById('gpsBtn');
             btn.innerText = "📡 위치 확인 중...";
 
@@ -174,19 +307,17 @@
                     const myLat = position.coords.latitude;
                     const myLng = position.coords.longitude;
 
-                    // 거리 계산 및 정렬
-                    currentItems.forEach(item => {
-                        if (item.lat && item.lng && item.lat !== 0) {
-                            item.distance = getDistance(myLat, myLng, item.lat, item.lng);
-                        } else {
-                            item.distance = 99999; // 좌표 없는 건 맨 뒤로
-                        }
-                    });
+                    // 만약 리스트가 비어있으면, 자동으로 '전체(주요 문화재)'를 먼저 불러옴
+                    if (currentItems.length === 0) {
+                        // 예: 서울(11) 지역을 기본으로 불러오거나, 전체 검색을 시도
+                        // 여기서는 편의상 '전체' 검색을 시도합니다.
+                         searchHeritage("", "", "").then(() => {
+                             calcAndSort(myLat, myLng);
+                         });
+                    } else {
+                        calcAndSort(myLat, myLng);
+                    }
 
-                    currentItems.sort((a, b) => a.distance - b.distance);
-
-                    renderList(currentItems); // 다시 그리기
-                    btn.classList.add('active');
                     btn.innerText = "✅ 거리순 정렬 완료";
                 },
                 (error) => {
@@ -196,45 +327,49 @@
             );
         }
 
-        // 거리 계산 공식 (Haversine Formula)
+        function calcAndSort(myLat, myLng) {
+             currentItems.forEach(item => {
+                if (item.lat && item.lng && item.lat !== 0) {
+                    item.distance = getDistance(myLat, myLng, item.lat, item.lng);
+                } else {
+                    item.distance = 99999;
+                }
+            });
+            currentItems.sort((a, b) => a.distance - b.distance);
+            renderList(currentItems);
+        }
+
         function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // 지구 반지름 (km)
+            const R = 6371; 
             const dLat = deg2rad(lat2 - lat1);
             const dLon = deg2rad(lon2 - lon1);
-            const a = 
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
             return R * c;
         }
 
-        function deg2rad(deg) {
-            return deg * (Math.PI / 180);
-        }
+        function deg2rad(deg) { return deg * (Math.PI / 180); }
 
         async function toggleDetail(kdcd, ctcd, asno, parentDiv) {
             const detailView = parentDiv.querySelector(".detail-view");
-            
             if (detailView.style.display === "block") {
                 detailView.style.display = "none";
                 return;
             }
             detailView.style.display = "block";
-
             if (detailView.getAttribute("data-loaded") === "true") return;
 
             try {
                 const targetUrl = `${DETAIL_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
                 const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
                 const str = await response.text();
-                
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(str, "text/xml");
 
                 const content = xml.getElementsByTagName("content")[0]?.textContent || "설명 없음";
                 const imgUrl = xml.getElementsByTagName("imageUrl")[0]?.textContent;
-                
                 const lng = xml.getElementsByTagName("longitude")[0]?.textContent;
                 const lat = xml.getElementsByTagName("latitude")[0]?.textContent;
 
@@ -258,29 +393,18 @@
                 if (lat && lng && lat != "0" && lng != "0") {
                     drawNaverMap(mapId, parseFloat(lat), parseFloat(lng));
                 }
-
             } catch (e) {
-                console.error(e);
                 detailView.innerHTML = "상세 정보를 가져올 수 없습니다.";
             }
         }
 
         function drawNaverMap(elementId, lat, lng) {
             if (typeof naver === "undefined") {
-                const el = document.getElementById(elementId);
-                el.innerHTML = "<div style='padding:20px; text-align:center;'>지도를 불러올 수 없습니다.<br>(URL 설정을 확인해주세요)</div>";
+                document.getElementById(elementId).innerHTML = "지도 로딩 실패";
                 return;
             }
-
-            const mapOptions = {
-                center: new naver.maps.LatLng(lat, lng),
-                zoom: 16
-            };
-            const map = new naver.maps.Map(elementId, mapOptions);
-            new naver.maps.Marker({
-                position: new naver.maps.LatLng(lat, lng),
-                map: map
-            });
+            const map = new naver.maps.Map(elementId, { center: new naver.maps.LatLng(lat, lng), zoom: 16 });
+            new naver.maps.Marker({ position: new naver.maps.LatLng(lat, lng), map: map });
         }
     </script>
 </body>
