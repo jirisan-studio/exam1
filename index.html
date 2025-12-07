@@ -106,8 +106,8 @@
     <!-- 1. 이름 검색 -->
     <div id="search-name" class="search-container active">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) searchHeritage()">
-            <button class="search-btn" onclick="searchHeritage()">검색</button>
+            <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) searchByName()">
+            <button class="search-btn" onclick="searchByName()">검색</button>
         </div>
     </div>
 
@@ -146,12 +146,13 @@
         </div>
     </div>
 
-    <!-- ✨ 푸터 복구 -->
+    <!-- ✨ 푸터 복구 (방문자 수 300부터 시작) -->
     <div class="footer">
         - Made by 이태건 -<br>
         <span class="contact-link" onclick="copyEmail()">📩 문의하기 (Contact)</span><br>
         <div class="hits-badge">
-            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fheritagekorea.vercel.app&countColor=%232C3E50&style=flat" />
+            <!-- &start=300 파라미터 추가됨 -->
+            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fheritagekorea.vercel.app&start=300&countColor=%232C3E50&style=flat" />
         </div>
     </div>
 
@@ -162,7 +163,7 @@
         const MY_EMAIL = "naturekr@gmail.com";
 
         let currentItems = [];
-        let currentState = { query: "", regionCode: "", subRegionCode: "", kdcd: "" };
+        let currentState = { mode: 'name', query: "", regionCode: "", subRegionCode: "", kdcd: "" };
 
         // 지역 데이터 (내장)
         const REGIONS = [
@@ -251,10 +252,10 @@
             
             currentState.regionCode = code;
             currentState.subRegionCode = "";
-            currentState.query = ""; // 지역 검색 시 검색어 초기화
+            currentState.query = ""; 
             
             renderSubRegions(code);
-            searchHeritage(); // 전체 검색
+            searchHeritage();
         }
 
         function renderSubRegions(mainCode) {
@@ -294,6 +295,8 @@
             resultArea.innerHTML = '<div class="loading">데이터를 불러오는 중입니다...</div>';
             
             let targetUrl = `${LIST_URL}?pageUnit=50`;
+            
+            // ✨ [수정됨] 검색어(query)가 있으면 ccbaMnm1 파라미터를 확실하게 붙임
             if (currentState.query) targetUrl += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
             if (currentState.regionCode) targetUrl += `&ccbaCtcd=${currentState.regionCode}`;
             if (currentState.subRegionCode) targetUrl += `&ccbaLcto=${currentState.subRegionCode}`;
@@ -321,7 +324,7 @@
                 }
                 renderList(currentItems);
                 
-                // ✨ 비동기 카운트 업데이트 (속도 저하 방지)
+                // ✨ [수정됨] 지역/검색어 조건에 맞춰서 카운트 업데이트
                 updateFilterCounts();
 
             } catch (error) {
@@ -401,7 +404,6 @@
             });
         }
 
-        // 내 주변 찾기
         function sortByLocation() {
             const btn = document.getElementById('gpsBtn');
             btn.innerText = "📡 위치 확인 중...";
@@ -413,6 +415,7 @@
                 const myLng = position.coords.longitude;
 
                 if (currentItems.length === 0) {
+                    // 리스트가 없으면 전체 검색 후 정렬
                     currentState = { mode: 'nearby', query: "", regionCode: "", subRegionCode: "", kdcd: "" };
                     searchHeritage().then(() => doSort(myLat, myLng));
                 } else {
