@@ -6,10 +6,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# 1. 메인 화면 접속 시 (이제 바로 옆에 있는 파일을 찾습니다)
+# 1. 메인 화면 접속 시 (같은 폴더의 index.html 전송)
 @app.route('/')
 def home():
-    # 현재 실행 중인 폴더(api)에서 index.html을 찾음
     return send_file('index.html')
 
 # 2. /index.html 로 접속해도 똑같이 처리
@@ -17,7 +16,7 @@ def home():
 def home_file():
     return home()
 
-# 3. API 프록시 기능 (기존 유지)
+# 3. API 프록시 기능
 @app.route('/api/proxy')
 def proxy():
     url = request.args.get('url')
