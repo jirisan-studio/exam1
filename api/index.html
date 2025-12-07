@@ -333,28 +333,56 @@ function successGPS(position) {
             resultArea.innerHTML = `<div class="loading">❌ 위치 정보를 가져올 수 없습니다.<br>(${err.message})</div>`;
         }
 
+        // ✨ [수정됨] 네이버 주소(긴 이름)를 우리 사이트 코드(짧은 이름)로 변환
+        const SIDO_MAP = {
+            "서울특별시": "서울",
+            "부산광역시": "부산",
+            "대구광역시": "대구",
+            "인천광역시": "인천",
+            "광주광역시": "광주",
+            "대전광역시": "대전",
+            "울산광역시": "울산",
+            "세종특별자치시": "세종",
+            "경기도": "경기",
+            "강원특별자치도": "강원", "강원도": "강원",
+            "충청북도": "충북",
+            "충청남도": "충남",
+            "전북특별자치도": "전북", "전라북도": "전북",
+            "전라남도": "전남",
+            "경상북도": "경북",
+            "경상남도": "경남",
+            "제주특별자치도": "제주", "제주도": "제주"
+        };
+
         function autoSelectRegion(sidoName, gugunName) {
-            // 시/도 매칭
-            let targetRegion = REGIONS.find(r => sidoName.includes(r.name));
+            // 1. 긴 이름을 짧은 이름으로 변환 (예: 전라남도 -> 전남)
+            // 매핑 테이블에 없으면 앞 2글자만 사용 (예: 부산광역시 -> 부산)
+            let shortName = SIDO_MAP[sidoName] || sidoName.substring(0, 2);
+
+            console.log(`지역명 변환: ${sidoName} -> ${shortName}`);
+
+            // 2. 시/도 매칭
+            let targetRegion = REGIONS.find(r => r.name === shortName);
             
             if (!targetRegion) {
-                document.getElementById('result-area').innerHTML = `<div class="loading">죄송합니다.<br>'${sidoName}' 지역은 데이터 매칭에 실패했습니다.</div>`;
+                document.getElementById('result-area').innerHTML = `<div class="loading">죄송합니다.<br>'${sidoName}'(${shortName}) 지역은 데이터 매칭에 실패했습니다.</div>`;
                 return;
             }
 
-            // 시/도 버튼 클릭 시뮬레이션
+            // 3. 시/도 버튼 클릭 시뮬레이션
             const regionBtns = document.getElementById('region-main-scroll').querySelectorAll('.chip-btn');
             regionBtns.forEach(btn => {
                 if(btn.innerText === targetRegion.name) btn.click();
             });
 
-            // 구/군 매칭 (DOM 업데이트 대기 후 실행)
+            // 4. 구/군 매칭 (DOM 업데이트 대기 후 실행)
             setTimeout(() => {
                 const subList = SUB_REGIONS[targetRegion.code];
                 let foundSub = false;
 
                 if(subList && subList.length > 0) {
-                    let targetSub = subList.find(s => gugunName.includes(s.name));
+                    // 구/군 이름도 유연하게 매칭 (예: 종로구 -> 종로)
+                    let targetSub = subList.find(s => gugunName.includes(s.name) || s.name.includes(gugunName));
                     
                     if(targetSub) {
                         const subBtns = document.getElementById('region-sub-scroll').querySelectorAll('.chip-btn');
@@ -371,9 +399,10 @@ function successGPS(position) {
                 setTimeout(() => {
                     const resultArea = document.getElementById('result-area');
                     let msg = `<div class="gps-alert">📍 현재 계신 <span style="text-decoration:underline;">${sidoName} ${gugunName}</span>의 국가유산을 찾았습니다!</div>`;
-                    if(!foundSub && targetRegion.code !== '45') { // 세종시는 구가 없음
-                         msg = `<div class="gps-alert">📍 현재 계신 <span style="text-decoration:underline;">${sidoName}</span>의 전체 국가유산을 찾았습니다!<br>(상세 지역 '${gugunName}' 매칭 실패)</div>`;
+                    if(!foundSub && targetRegion.code !== '45') { 
+                         msg = `<div class="gps-alert">📍 현재 계신 <span style="text-decoration:underline;">${sidoName}</span>의 전체 국가유산을 찾았습니다!<br>(상세 지역 '${gugunName}' 매칭 실패 - 전체 목록 표시)</div>`;
                     }
+                    // 기존 결과 위에 메시지 삽입
                     resultArea.innerHTML = msg + resultArea.innerHTML;
                 }, 500);
 
