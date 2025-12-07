@@ -11,10 +11,11 @@
     <meta property="og:image" content="https://www.heritage.go.kr/images/main/heritage_main_sample.png"> 
 
     <meta name="referrer" content="no-referrer-when-downgrade">
-    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
+    
+    <!-- ✨ [수정됨] 네이버 지도 API에 geocoder 모듈 추가 -->
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly&submodules=geocoder"></script>
     
     <style>
-        /* 스타일은 기존과 동일하게 유지 */
         body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 160px; box-sizing: border-box; color: #333; }
         @media (max-width: 600px) { body { padding: 10px; } }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; letter-spacing: -1px; cursor: pointer; }
@@ -90,6 +91,8 @@
         .gallery-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
         .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
         .gallery-img:hover { border-color: #2c3e50; }
+        /* GPS 결과 알림 스타일 */
+        .gps-alert { padding: 15px; text-align: center; background: #e8f5e9; border-radius: 8px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; border: 1px solid #c8e6c9; animation: fadeIn 0.5s; }
     </style>
 </head>
 <body>
@@ -99,6 +102,8 @@
     <div class="mode-tabs">
         <button class="mode-tab active" onclick="switchMode('name')">이름으로 찾기</button>
         <button class="mode-tab" onclick="switchMode('region')">지역으로 찾기</button>
+        <!-- ✨ [추가됨] 내 근처 찾기 버튼 -->
+        <button class="mode-tab" onclick="findNearMe()">📍 내 근처 찾기</button>
     </div>
 
     <div id="search-name" class="search-container active">
@@ -161,7 +166,6 @@
             { code: "38", name: "경남" }, { code: "50", name: "제주" }
         ];
 
-        // ✨ [수정 완료] CSV 데이터를 기반으로 국가유산청 전용 코드 완벽 적용
         const SUB_REGIONS = {
             "11": [{code:"11",name:"종로구"},{code:"12",name:"중구"},{code:"13",name:"용산구"},{code:"14",name:"성동구"},{code:"15",name:"동대문구"},{code:"16",name:"성북구"},{code:"17",name:"도봉구"},{code:"18",name:"은평구"},{code:"19",name:"서대문구"},{code:"20",name:"마포구"},{code:"21",name:"강서구"},{code:"22",name:"구로구"},{code:"23",name:"영등포구"},{code:"24",name:"동작구"},{code:"25",name:"관악구"},{code:"26",name:"강남구"},{code:"27",name:"강동구"},{code:"28",name:"송파구"},{code:"29",name:"중랑구"},{code:"30",name:"노원구"},{code:"31",name:"서초구"},{code:"32",name:"양천구"},{code:"33",name:"광진구"},{code:"34",name:"강북구"},{code:"35",name:"금천구"}],
             "21": [{code:"11",name:"중구"},{code:"12",name:"서구"},{code:"13",name:"동구"},{code:"14",name:"영도구"},{code:"15",name:"부산진구"},{code:"16",name:"동래구"},{code:"17",name:"남구"},{code:"18",name:"북구"},{code:"19",name:"해운대구"},{code:"20",name:"사하구"},{code:"21",name:"금정구"},{code:"22",name:"강서구"},{code:"23",name:"연제구"},{code:"24",name:"수영구"},{code:"25",name:"사상구"},{code:"26",name:"기장군"}],
@@ -191,20 +195,17 @@
             { code: "31", name: "문화유산자료" }, { code: "80", name: "이북5도" }
         ];
 
-   // [Exam 1 프로젝트 index.html 수정]
         window.onload = function() {
             renderRegionGrid();
             createFilterTabs(""); 
             renderRecentSearches();
 
-            // ✨ 이 부분이 핵심입니다! 외부에서 온 검색어 처리
             const params = new URLSearchParams(window.location.search);
             const sharedQuery = params.get('q');
             
             if (sharedQuery) {
-                const decodedQuery = decodeURIComponent(sharedQuery); // 한글 깨짐 방지
+                const decodedQuery = decodeURIComponent(sharedQuery);
                 document.getElementById('searchInput').value = decodedQuery;
-                // 약간의 딜레이를 주고 검색 실행 (데이터 로딩 안정성 확보)
                 setTimeout(() => {
                     searchByName();
                 }, 100);
@@ -248,16 +249,116 @@
             if(mode === 'name') {
                 document.querySelectorAll('.mode-tab')[0].classList.add('active');
                 document.getElementById('search-name').classList.add('active');
-            } else {
+            } else if (mode === 'region') {
                 document.querySelectorAll('.mode-tab')[1].classList.add('active');
                 document.getElementById('search-region').classList.add('active');
             }
+            // '내 근처 찾기'는 별도 함수에서 처리
             
             document.getElementById('result-area').innerHTML = "";
             document.getElementById('filter-area').innerHTML = "";
             document.getElementById('loadMoreBtn').style.display = 'none';
             document.getElementById('sub-region-area').style.display = 'none';
             document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+        }
+
+        // ✨ [추가됨] 내 근처 찾기 로직
+        function findNearMe() {
+            // 1. UI 전환: 지역 탭을 베이스로 사용
+            switchMode('region');
+            document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.mode-tab')[2].classList.add('active'); // 3번째 탭(내 근처) 활성화
+
+            // 2. 로딩 표시
+            const resultArea = document.getElementById('result-area');
+            resultArea.innerHTML = '<div class="loading">📡 현재 위치를 확인하고 있습니다...<br>(브라우저의 위치 권한을 허용해주세요)</div>';
+            document.getElementById('filter-area').innerHTML = "";
+
+            // 3. GPS 요청
+            if (!navigator.geolocation) {
+                alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(successGPS, errorGPS, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        }
+
+        function successGPS(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            // 4. 네이버 API로 좌표 -> 주소 변환
+            naver.maps.Service.reverseGeocode({
+                coords: new naver.maps.LatLng(lat, lng),
+            }, function(status, response) {
+                if (status !== naver.maps.Service.Status.OK) {
+                    return alert('주소를 찾을 수 없습니다.');
+                }
+
+                const result = response.v2; 
+                const address = result.address;
+                const sido = address.jibunAddress.split(' ')[0]; // 예: 서울특별시
+                const gugun = address.jibunAddress.split(' ')[1]; // 예: 종로구
+
+                console.log(`현재 위치: ${sido} ${gugun}`);
+                autoSelectRegion(sido, gugun);
+            });
+        }
+
+        function errorGPS(err) {
+            const resultArea = document.getElementById('result-area');
+            resultArea.innerHTML = `<div class="loading">❌ 위치 정보를 가져올 수 없습니다.<br>(${err.message})</div>`;
+        }
+
+        function autoSelectRegion(sidoName, gugunName) {
+            // 시/도 매칭
+            let targetRegion = REGIONS.find(r => sidoName.includes(r.name));
+            
+            if (!targetRegion) {
+                document.getElementById('result-area').innerHTML = `<div class="loading">죄송합니다.<br>'${sidoName}' 지역은 데이터 매칭에 실패했습니다.</div>`;
+                return;
+            }
+
+            // 시/도 버튼 클릭 시뮬레이션
+            const regionBtns = document.getElementById('region-main-scroll').querySelectorAll('.chip-btn');
+            regionBtns.forEach(btn => {
+                if(btn.innerText === targetRegion.name) btn.click();
+            });
+
+            // 구/군 매칭 (DOM 업데이트 대기 후 실행)
+            setTimeout(() => {
+                const subList = SUB_REGIONS[targetRegion.code];
+                let foundSub = false;
+
+                if(subList && subList.length > 0) {
+                    let targetSub = subList.find(s => gugunName.includes(s.name));
+                    
+                    if(targetSub) {
+                        const subBtns = document.getElementById('region-sub-scroll').querySelectorAll('.chip-btn');
+                        subBtns.forEach(btn => {
+                            if(btn.innerText === targetSub.name) {
+                                btn.click();
+                                foundSub = true;
+                            }
+                        });
+                    }
+                }
+
+                // 결과 상단에 안내 메시지 추가
+                setTimeout(() => {
+                    const resultArea = document.getElementById('result-area');
+                    let msg = `<div class="gps-alert">📍 현재 계신 <span style="text-decoration:underline;">${sidoName} ${gugunName}</span>의 국가유산을 찾았습니다!</div>`;
+                    if(!foundSub && targetRegion.code !== '45') { // 세종시는 구가 없음
+                         msg = `<div class="gps-alert">📍 현재 계신 <span style="text-decoration:underline;">${sidoName}</span>의 전체 국가유산을 찾았습니다!<br>(상세 지역 '${gugunName}' 매칭 실패)</div>`;
+                    }
+                    resultArea.innerHTML = msg + resultArea.innerHTML;
+                }, 500);
+
+            }, 300);
         }
 
         function renderRegionGrid() {
@@ -292,7 +393,6 @@
             }
 
             subArea.style.display = 'block';
-            // "전체" 버튼 클릭 시 code를 '00'으로 전달 (CSV 데이터 기준)
             let html = `<button class="chip-btn active" onclick="selectSubRegion('00', this)">전체</button>`;
             
             subList.forEach(sub => {
@@ -335,8 +435,6 @@
                     url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
                     url += `&ccbaCtcd=${currentState.regionCode}`;
-                    // 하위 지역 필터링: '00'이면 전체이므로 파라미터를 보내지 않거나 00을 보내야 함
-                    // CSV에 따르면 전체는 '00'이므로 명시적으로 보냅니다.
                     if(currentState.subRegionCode && currentState.subRegionCode !== '00') {
                          url += `&ccbaLcto=${currentState.subRegionCode}`;
                     }
@@ -418,8 +516,6 @@
                     url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
                     url += `&ccbaCtcd=${currentState.regionCode}`;
-                    // 하위 지역 필터: '00'이면 파라미터 생략 (전체 조회) 또는 '00' 전송
-                    // 테스트 결과 00을 보내면 안 되는 경우도 있어서, 특정 지역만 필터링
                     if(currentState.subRegionCode && currentState.subRegionCode !== '00') {
                         url += `&ccbaLcto=${currentState.subRegionCode}`;
                     }
