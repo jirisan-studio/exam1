@@ -1,34 +1,33 @@
-from flask import Flask, request, Response, send_file
-from flask_cors import CORS
-import requests
-import os
+# ... (기존 코드들) ...
 
-app = Flask(__name__)
-CORS(app)
-
-# 1. 메인 접속 시 index.html 파일 읽어서 보내기 (이 부분이 부활했습니다)
-@app.route('/')
-def home():
-    # 현재 폴더(api)의 부모 폴더(root)에 있는 index.html을 찾음
-    file_path = os.path.join(os.path.dirname(__file__), '../index.html')
-    return send_file(file_path)
-
-# 2. /index.html 로 접속해도 똑같이 처리
-@app.route('/index.html')
-def home_file():
-    return home()
-
-# 3. API 프록시 기능 (기존 유지)
-@app.route('/api/proxy')
-def proxy():
-    url = request.args.get('url')
-    if not url:
-        return "URL parameter is required", 400
+# 🔍 디버깅용: 현재 서버의 폴더 구조 확인하기
+@app.route('/debug')
+def debug_paths():
+    import os
+    
+    # 1. 현재 파이썬 파일이 실행되는 위치 (Current Working Directory)
+    cwd = os.getcwd()
+    
+    # 2. 현재 폴더의 파일 목록
+    files_in_cwd = os.listdir(cwd)
+    
+    # 3. 상위 폴더(..)의 파일 목록 (여기에 index.html이 있어야 함)
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        resp = requests.get(url, headers=headers)
-        return Response(resp.content, mimetype='text/xml; charset=utf-8')
-    except Exception as e:
-        return str(e), 500
+        files_in_parent = os.listdir(os.path.join(cwd, '..'))
+    except:
+        files_in_parent = "상위 폴더 접근 불가"
+
+    # 4. __file__ 변수가 가리키는 절대 경로
+    file_abs_path = os.path.abspath(__file__)
+
+    return f"""
+    <h1>📂 Vercel 서버 경로 확인</h1>
+    <p><strong>현재 작업 폴더 (CWD):</strong> {cwd}</p>
+    <p><strong>현재 파일 절대 경로:</strong> {file_abs_path}</p>
+    <hr>
+    <h3>📄 현재 폴더 파일 목록:</h3>
+    <pre>{files_in_cwd}</pre>
+    <hr>
+    <h3>⬆️ 상위 폴더(..) 파일 목록 (예상되는 index.html 위치):</h3>
+    <pre>{files_in_parent}</pre>
+    """
