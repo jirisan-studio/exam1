@@ -5,113 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>국가유산 지도 검색</title>
     
-    <meta name="description" content="우리나라 국가유산의 위치와 상세 정보를 한눈에 확인하세요.">
+    <meta name="description" content="국가유산청에 등록된 국가유산을 이름과 지역 검색으로 확인할 수 있는 홈페이지 입니다">
+    <meta name="keywords" content="국가유산, 문화재, 국가유산청, 유네스코 세계유산, 국보, 보물, 무형유산, 사적, 궁궐">
     <meta property="og:title" content="국가유산 지도 검색">
+    <meta property="og:image" content="https://www.heritage.go.kr/images/main/heritage_main_sample.png"> 
+
     <meta name="referrer" content="no-referrer-when-downgrade">
-    
-    <!-- 네이버 지도 API -->
-    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=q9guv183ig"></script>
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=an3gqg9xly"></script>
     
     <style>
-        /* 기본 설정 */
-        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; padding-bottom: 150px; color: #333; box-sizing: border-box; }
+        /* 스타일은 기존과 동일하게 유지 */
+        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; position: relative; padding-bottom: 160px; box-sizing: border-box; color: #333; }
+        @media (max-width: 600px) { body { padding: 10px; } }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; letter-spacing: -1px; cursor: pointer; }
-        
-        /* 3단 탭 디자인 */
         .mode-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-        .mode-tab { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-weight: bold; color: #888; background: none; border: none; font-size: 1rem; transition: 0.2s; white-space: nowrap; }
+        .mode-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #888; background: none; border: none; font-size: 1.1em; transition: 0.2s; }
         .mode-tab.active { color: #2c3e50; border-bottom: 3px solid #2c3e50; margin-bottom: -2px; }
-
-        /* 검색 컨테이너들 */
-        .search-container { display: none; padding: 10px 0; }
+        .search-container { display: none; }
         .search-container.active { display: block; }
-
-        /* 이름 검색창 */
         .search-box { display: flex; gap: 10px; margin-bottom: 10px; }
-        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; }
+        input { flex: 1; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         input:focus { border-color: #2c3e50; }
-        button.search-btn { padding: 15px 20px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-        
-        /* 내 주변 버튼 */
-        .gps-btn { background-color: #27ae60; width: 100%; padding: 15px; border-radius: 8px; color: white; font-weight: bold; border: none; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .gps-btn:hover { background-color: #219150; }
-
-        /* 지역 선택 칩 (PC 줄바꿈 대응) */
+        button.search-btn { padding: 15px 25px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; white-space: nowrap; }
+        button.search-btn:hover { background-color: #34495e; }
+        .recent-search-area { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
+        .recent-search-area::-webkit-scrollbar { display: none; }
+        .recent-chip { font-size: 0.85em; color: #555; background: #e9ecef; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid transparent; }
+        .recent-chip:hover { background: #dde1e6; color: #2c3e50; border-color: #cfd4da; }
+        .recent-label { font-size: 0.8em; color: #888; margin-right: 5px; align-self: center; white-space: nowrap; }
         .region-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
-        .chip-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.95em; transition: 0.2s; }
+        .chip-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.95em; transition: 0.2s; flex-shrink: 0; }
+        .chip-btn:hover { background-color: #f0f0f0; border-color: #aaa; }
         .chip-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
-
-        /* 하위 지역 */
         #sub-region-area { display: none; border-top: 1px dashed #ddd; padding-top: 15px; margin-bottom: 20px; text-align: center; background-color: #eef2f5; padding: 15px; border-radius: 8px; }
         .sub-region-title { font-size: 0.9em; color: #2c3e50; margin-bottom: 10px; font-weight: bold; display: block; }
-
-        /* ✨ 알약 필터 (복구됨) */
-        .filter-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
-        .filter-chip { 
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 8px 16px; font-size: 0.9rem; font-weight: 500; 
-            color: #555; background-color: white; border: 1px solid #ddd; 
-            border-radius: 9999px; cursor: pointer; transition: all 0.2s; 
-        }
-        .filter-chip:hover { background-color: #f0f0f0; }
-        .filter-chip.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
-
-        /* 리스트 아이템 */
-        #result-area { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .item { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
-        .item:hover { transform: translateY(-3px); border-color: #2c3e50; }
-        
-        .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
+        .filter-container { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 10px; margin-bottom: 20px; justify-content: center; }
+        .filter-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: 0.2s; }
+        .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
+        .filter-btn.fav-btn { color: #f39c12; border-color: #f39c12; }
+        .filter-btn.fav-btn.active { background-color: #f39c12; color: white; }
+        #result-area { display: flex; flex-direction: column; gap: 15px; }
+        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; position: relative; }
+        .item:hover { transform: translateY(-3px); border-color: #2c3e50; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; background-color: #95a5a6; }
         .badge.국보 { background-color: #d35400; }
         .badge.보물 { background-color: #2980b9; }
         .badge.사적 { background-color: #27ae60; }
-        
-        .dist-badge { font-size: 0.9em; color: #e67e22; font-weight: bold; margin-left: auto; }
-        
-        .item-title { font-size: 1.2em; font-weight: bold; color: #333; }
-        .item-info { font-size: 0.9em; color: #7f8c8d; }
-
-        .detail-view { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #eee; display: none; }
-        .detail-img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-        .detail-desc { line-height: 1.6; color: #444; margin-top: 10px; word-break: keep-all; }
-        .map-container { width: 100%; height: 300px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; }
+        .badge.천연기념물 { background-color: #16a085; }
+        .item-title { font-size: 1.25em; font-weight: bold; color: #2c3e50; cursor: pointer; flex: 1; }
+        .item-info { font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px; cursor: pointer; }
+        .detail-view { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; display: none; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .fav-star { font-size: 1.5em; cursor: pointer; color: #ddd; transition: 0.2s; }
+        .fav-star.active { color: #f39c12; transform: scale(1.2); }
+        .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95em; }
+        .summary-table th { background: #f1f3f5; color: #555; padding: 12px 10px; border: 1px solid #e9ecef; text-align: center; width: 22%; white-space: nowrap; font-weight: 600; }
+        .summary-table td { padding: 12px 10px; border: 1px solid #e9ecef; color: #333; }
+        .detail-desc { line-height: 1.8; color: #444; font-size: 1em; word-break: keep-all; margin-bottom: 20px; }
+        .detail-img { max-width: 100%; border-radius: 8px; margin-bottom: 20px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .map-wrapper { margin-top: 20px; }
+        .map-container { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; }
+        .action-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 0.95em; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-map { background-color: #2c3e50; color: white; border: none; }
+        .btn-map:hover { background-color: #1a252f; }
+        .external-links { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-external { background-color: white; border: 1px solid #ced4da; color: #495057; }
+        .btn-external:hover { background-color: #f8f9fa; border-color: #adb5bd; color: #212529; }
+        .load-more-btn { width: 100%; padding: 15px; margin-top: 20px; background: white; border: 1px solid #ddd; border-radius: 8px; color: #555; font-size: 1em; cursor: pointer; font-weight: bold; display: none; }
+        .load-more-btn:hover { background: #f9f9f9; color: #333; }
+        .related-section { margin-top: 60px; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .related-title { font-size: 1em; color: #7f8c8d; margin-bottom: 15px; text-align: center; font-weight: normal; }
+        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; }
+        .link-card { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.85em; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .link-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #2c3e50; color: #2c3e50; }
+        .link-icon { font-size: 1.8em; margin-bottom: 2px; }
         .loading { text-align: center; color: #888; padding: 30px; }
-
-        /* ✨ 관련 사이트 배너 (복구됨) */
-        .related-section { margin-top: 40px; padding-top: 20px; border-top: 1px dashed #ddd; }
-        .related-title { font-size: 0.9em; color: #888; margin-bottom: 10px; text-align: center; }
-        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
-        .link-card { background: white; border-radius: 8px; padding: 10px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.8em; font-weight: bold; border: 1px solid #eee; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .link-card:hover { border-color: #2c3e50; color: #2c3e50; }
-
-        /* ✨ 푸터 및 카운터 (복구됨) */
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
-        .contact-link { display: inline-block; margin-top: 5px; cursor: pointer; color: #555; font-weight: bold; }
-        .hits-badge { margin-top: 10px; }
-        .hits-badge img { height: 20px; }
+        .footer a { color: #888; text-decoration: none; border-bottom: 1px dotted #888; }
+        .contact-link { display: inline-block; margin-top: 5px; cursor: pointer; color: #555; font-weight: bold; transition: 0.2s; }
+        .contact-link:hover { color: #2c3e50; text-decoration: underline; }
+        .hits-badge { margin-top: 15px; display: inline-block; }
+        .gallery-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
+        .gallery-img { height: 120px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
+        .gallery-img:hover { border-color: #2c3e50; }
     </style>
 </head>
 <body>
 
-    <h1 onclick="location.reload()">🏛️ 국가유산 지도 검색</h1>
+    <h1 onclick="window.location.href=window.location.pathname">🏛️ 국가유산 지도 검색</h1>
     
-    <!-- 3단 탭 메뉴 -->
     <div class="mode-tabs">
         <button class="mode-tab active" onclick="switchMode('name')">이름으로 찾기</button>
         <button class="mode-tab" onclick="switchMode('region')">지역으로 찾기</button>
-        <button class="mode-tab" onclick="switchMode('nearby')">📍 내 근처 찾기</button>
     </div>
 
-    <!-- 1. 이름 검색 -->
     <div id="search-name" class="search-container active">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 불국사)" onkeypress="if(event.keyCode==13) searchByName()">
+            <input type="text" id="searchInput" placeholder="문화유산 이름 (예: 숭례문, 화엄사)" onkeypress="if(event.keyCode==13) searchByName()">
             <button class="search-btn" onclick="searchByName()">검색</button>
         </div>
+        <div id="recent-search-area" class="recent-search-area"></div>
     </div>
 
-    <!-- 2. 지역 검색 -->
     <div id="search-region" class="search-container">
         <div id="region-main-scroll" class="region-scroll-area"></div>
         <div id="sub-region-area">
@@ -120,39 +117,27 @@
         </div>
     </div>
 
-    <!-- 3. 내 근처 찾기 -->
-    <div id="search-nearby" class="search-container">
-        <p style="text-align:center; color:#666; margin-bottom:15px; font-size:0.9em;">
-            현재 위치를 확인하여 가까운 순서대로 정렬합니다.
-        </p>
-        <button onclick="sortByLocation()" class="gps-btn" id="gpsBtn">
-            📡 내 위치 확인하고 검색하기
-        </button>
-    </div>
-
-    <!-- ✨ 필터 탭 (알약 모양 복구) -->
     <div id="filter-area" class="filter-container"></div>
-
     <div id="result-area"></div>
+    <button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">결과 더보기 +</button>
 
-    <!-- ✨ 관련 사이트 배너 복구 -->
     <div class="related-section">
         <h3 class="related-title">관련 사이트</h3>
         <div class="quick-links">
-            <a href="https://www.khs.go.kr" target="_blank" class="link-card"><span>🏛️</span><span>국가유산청</span></a>
-            <a href="https://www.heritage.go.kr" target="_blank" class="link-card"><span>🌏</span><span>국가유산포털</span></a>
-            <a href="https://www.museum.go.kr" target="_blank" class="link-card"><span>🏺</span><span>국립중앙박물관</span></a>
-            <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card"><span>✈️</span><span>구석구석</span></a>
+            <a href="https://www.khs.go.kr" target="_blank" class="link-card"><span class="link-icon">🏛️</span><span>국가유산청</span></a>
+            <a href="https://www.heritage.go.kr" target="_blank" class="link-card"><span class="link-icon">🌏</span><span>국가유산포털</span></a>
+            <a href="https://www.knps.or.kr" target="_blank" class="link-card"><span class="link-icon">🏞️</span><span>국립공원공단</span></a>
+            <a href="https://www.museum.go.kr" target="_blank" class="link-card"><span class="link-icon">🏺</span><span>국립중앙박물관</span></a>
+            <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card"><span class="link-icon">✈️</span><span>구석구석</span></a>
         </div>
     </div>
 
-    <!-- ✨ 푸터 복구 (방문자 수 300부터 시작) -->
     <div class="footer">
+        이 사이트는 국가유산청(<a href="https://www.khs.go.kr" target="_blank">https://www.khs.go.kr</a>)의 오픈API를 이용해서 만들었습니다.<br>
         - Made by 이태건 -<br>
         <span class="contact-link" onclick="copyEmail()">📩 문의하기 (Contact)</span><br>
         <div class="hits-badge">
-            <!-- &start=300 파라미터 추가됨 -->
-            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fheritagekorea.vercel.app&start=300&countColor=%232C3E50&style=flat" />
+            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fexam1-beige.vercel.app&countColor=%232C3E50&style=flat" />
         </div>
     </div>
 
@@ -160,12 +145,13 @@
         const PROXY_BASE = "/api/proxy?url=";
         const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
+        const IMAGE_URL = "http://www.khs.go.kr/cha/SearchImageOpenapi.do";
         const MY_EMAIL = "naturekr@gmail.com";
 
-        let currentItems = [];
-        let currentState = { mode: 'name', query: "", regionCode: "", subRegionCode: "", kdcd: "" };
+        let currentState = { mode: 'name', query: "", regionCode: "", subRegionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
+        let favorites = JSON.parse(localStorage.getItem('myHeritageFavs')) || [];
+        let recentSearches = JSON.parse(localStorage.getItem('myHeritageRecent')) || ["화엄사", "삼층석탑", "비로자나불"];
 
-        // 지역 데이터 (내장)
         const REGIONS = [
             { code: "11", name: "서울" }, { code: "21", name: "부산" }, { code: "22", name: "대구" },
             { code: "23", name: "인천" }, { code: "24", name: "광주" }, { code: "25", name: "대전" },
@@ -175,6 +161,7 @@
             { code: "38", name: "경남" }, { code: "50", name: "제주" }
         ];
 
+        // ✨ [수정 완료] CSV 데이터를 기반으로 국가유산청 전용 코드 완벽 적용
         const SUB_REGIONS = {
             "11": [{code:"11",name:"종로구"},{code:"12",name:"중구"},{code:"13",name:"용산구"},{code:"14",name:"성동구"},{code:"15",name:"동대문구"},{code:"16",name:"성북구"},{code:"17",name:"도봉구"},{code:"18",name:"은평구"},{code:"19",name:"서대문구"},{code:"20",name:"마포구"},{code:"21",name:"강서구"},{code:"22",name:"구로구"},{code:"23",name:"영등포구"},{code:"24",name:"동작구"},{code:"25",name:"관악구"},{code:"26",name:"강남구"},{code:"27",name:"강동구"},{code:"28",name:"송파구"},{code:"29",name:"중랑구"},{code:"30",name:"노원구"},{code:"31",name:"서초구"},{code:"32",name:"양천구"},{code:"33",name:"광진구"},{code:"34",name:"강북구"},{code:"35",name:"금천구"}],
             "21": [{code:"11",name:"중구"},{code:"12",name:"서구"},{code:"13",name:"동구"},{code:"14",name:"영도구"},{code:"15",name:"부산진구"},{code:"16",name:"동래구"},{code:"17",name:"남구"},{code:"18",name:"북구"},{code:"19",name:"해운대구"},{code:"20",name:"사하구"},{code:"21",name:"금정구"},{code:"22",name:"강서구"},{code:"23",name:"연제구"},{code:"24",name:"수영구"},{code:"25",name:"사상구"},{code:"26",name:"기장군"}],
@@ -204,15 +191,53 @@
             { code: "31", name: "문화유산자료" }, { code: "80", name: "이북5도" }
         ];
 
+   // [Exam 1 프로젝트 index.html 수정]
         window.onload = function() {
             renderRegionGrid();
             createFilterTabs(""); 
+            renderRecentSearches();
+
+            // ✨ 이 부분이 핵심입니다! 외부에서 온 검색어 처리
+            const params = new URLSearchParams(window.location.search);
+            const sharedQuery = params.get('q');
+            
+            if (sharedQuery) {
+                const decodedQuery = decodeURIComponent(sharedQuery); // 한글 깨짐 방지
+                document.getElementById('searchInput').value = decodedQuery;
+                // 약간의 딜레이를 주고 검색 실행 (데이터 로딩 안정성 확보)
+                setTimeout(() => {
+                    searchByName();
+                }, 100);
+            }
         };
 
         function copyEmail() {
             navigator.clipboard.writeText(MY_EMAIL).then(() => {
                 alert(`📧 이메일 주소가 복사되었습니다!\n(${MY_EMAIL})`);
             });
+        }
+
+        function renderRecentSearches() {
+            const area = document.getElementById('recent-search-area');
+            let html = `<span class="recent-label">최근:</span>`;
+            recentSearches.forEach(term => {
+                html += `<span class="recent-chip" onclick="clickRecentSearch('${term}')">${term}</span>`;
+            });
+            area.innerHTML = html;
+        }
+
+        function clickRecentSearch(term) {
+            document.getElementById('searchInput').value = term;
+            resetAndSearch();
+        }
+
+        function saveRecentSearch(term) {
+            if(!term) return;
+            recentSearches = recentSearches.filter(t => t !== term);
+            recentSearches.unshift(term);
+            if(recentSearches.length > 5) recentSearches.pop(); 
+            localStorage.setItem('myHeritageRecent', JSON.stringify(recentSearches));
+            renderRecentSearches();
         }
 
         function switchMode(mode) {
@@ -223,16 +248,14 @@
             if(mode === 'name') {
                 document.querySelectorAll('.mode-tab')[0].classList.add('active');
                 document.getElementById('search-name').classList.add('active');
-            } else if(mode === 'region') {
+            } else {
                 document.querySelectorAll('.mode-tab')[1].classList.add('active');
                 document.getElementById('search-region').classList.add('active');
-            } else if(mode === 'nearby') {
-                document.querySelectorAll('.mode-tab')[2].classList.add('active');
-                document.getElementById('search-nearby').classList.add('active');
             }
             
             document.getElementById('result-area').innerHTML = "";
             document.getElementById('filter-area').innerHTML = "";
+            document.getElementById('loadMoreBtn').style.display = 'none';
             document.getElementById('sub-region-area').style.display = 'none';
             document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         }
@@ -249,13 +272,13 @@
         function selectMainRegion(code, btn) {
             document.getElementById('region-main-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             currentState.regionCode = code;
-            currentState.subRegionCode = "";
-            currentState.query = ""; 
+            currentState.subRegionCode = ""; 
+            currentState.pageIndex = 1;
             
             renderSubRegions(code);
-            searchHeritage();
+            startSearch();
         }
 
         function renderSubRegions(mainCode) {
@@ -269,79 +292,55 @@
             }
 
             subArea.style.display = 'block';
-            let html = `<button class="chip-btn active" onclick="selectSubRegion('', '${mainCode}', this)">전체</button>`;
+            // "전체" 버튼 클릭 시 code를 '00'으로 전달 (CSV 데이터 기준)
+            let html = `<button class="chip-btn active" onclick="selectSubRegion('00', this)">전체</button>`;
+            
             subList.forEach(sub => {
-                html += `<button class="chip-btn" onclick="selectSubRegion('${sub.code}', '${mainCode}', this)">${sub.name}</button>`;
+                html += `<button class="chip-btn" onclick="selectSubRegion('${sub.code}', this)">${sub.name}</button>`;
             });
             subScroll.innerHTML = html;
         }
 
-        function selectSubRegion(subCode, mainCode, btn) {
+        function selectSubRegion(code, btn) {
             document.getElementById('region-sub-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentState.subRegionCode = subCode;
-            searchHeritage();
+            currentState.subRegionCode = code;
+            currentState.pageIndex = 1;
+            startSearch();
         }
 
         async function searchByName() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) { alert("검색어를 입력하세요."); return; }
-            currentState = { mode: 'name', query: query, regionCode: "", subRegionCode: "", kdcd: "" };
-            searchHeritage();
+            currentState = { mode: 'name', query: query, regionCode: "", subRegionCode: "", pageIndex: 1, kdcd: "", totalCnt: 0 };
+            
+            saveRecentSearch(query);
+            startSearch();
         }
 
-        async function searchHeritage() {
-            const resultArea = document.getElementById('result-area');
-            resultArea.innerHTML = '<div class="loading">데이터를 불러오는 중입니다...</div>';
-            
-            let targetUrl = `${LIST_URL}?pageUnit=50`;
-            
-            // ✨ [수정됨] 검색어(query)가 있으면 ccbaMnm1 파라미터를 확실하게 붙임
-            if (currentState.query) targetUrl += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
-            if (currentState.regionCode) targetUrl += `&ccbaCtcd=${currentState.regionCode}`;
-            if (currentState.subRegionCode) targetUrl += `&ccbaLcto=${currentState.subRegionCode}`;
-            if (currentState.kdcd) targetUrl += `&ccbaKdcd=${currentState.kdcd}`;
-
-            try {
-                const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
-                const str = await response.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(str, "text/xml");
-                const items = xml.getElementsByTagName("item");
-
-                currentItems = [];
-                for (let item of items) {
-                    currentItems.push({
-                        name: item.getElementsByTagName("ccbaMnm1")[0].textContent,
-                        type: item.getElementsByTagName("ccmaName")[0].textContent,
-                        kdcd: item.getElementsByTagName("ccbaKdcd")[0].textContent,
-                        ctcd: item.getElementsByTagName("ccbaCtcd")[0].textContent,
-                        asno: item.getElementsByTagName("ccbaAsno")[0].textContent,
-                        lat: parseFloat(item.getElementsByTagName("latitude")[0]?.textContent || 0),
-                        lng: parseFloat(item.getElementsByTagName("longitude")[0]?.textContent || 0),
-                        distance: null
-                    });
-                }
-                renderList(currentItems);
-                
-                // ✨ [수정됨] 지역/검색어 조건에 맞춰서 카운트 업데이트
-                updateFilterCounts();
-
-            } catch (error) {
-                console.error(error);
-                resultArea.innerHTML = "<div class='loading'>에러가 발생했습니다.</div>";
-            }
+        async function startSearch() {
+            document.getElementById('result-area').innerHTML = '<div class="loading">데이터를 조회 중입니다...</div>';
+            document.getElementById('loadMoreBtn').style.display = 'none';
+            await createFilterTabs();
+            await loadList();
         }
 
-        async function updateFilterCounts() {
+        async function createFilterTabs() {
             const filterArea = document.getElementById('filter-area');
-            filterArea.innerHTML = `<button class="filter-chip active">전체 로딩중...</button>`; 
+            let html = `<button class="filter-btn fav-btn" onclick="showFavorites()">⭐ 즐겨찾기 (${favorites.length})</button>`;
 
             const promises = CATEGORIES.map(async (cat) => {
                 let url = `${LIST_URL}?pageUnit=1&ccbaKdcd=${cat.code}`;
-                if (currentState.query) url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
-                if (currentState.regionCode) url += `&ccbaCtcd=${currentState.regionCode}`;
-                if (currentState.subRegionCode) url += `&ccbaLcto=${currentState.subRegionCode}`;
+                if(currentState.mode === 'name') {
+                    url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
+                } else {
+                    url += `&ccbaCtcd=${currentState.regionCode}`;
+                    // 하위 지역 필터링: '00'이면 전체이므로 파라미터를 보내지 않거나 00을 보내야 함
+                    // CSV에 따르면 전체는 '00'이므로 명시적으로 보냅니다.
+                    if(currentState.subRegionCode && currentState.subRegionCode !== '00') {
+                         url += `&ccbaLcto=${currentState.subRegionCode}`;
+                    }
+                }
 
                 try {
                     const res = await fetch(PROXY_BASE + encodeURIComponent(url));
@@ -353,137 +352,318 @@
             });
 
             const results = await Promise.all(promises);
-            
-            let html = "";
             results.forEach((item) => {
                 if (item.count > 0) {
-                    const activeClass = (currentState.kdcd === item.code) ? "active" : "";
+                    const activeClass = item.code === "" ? "active" : "";
                     let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
                     if(item.name === "전체") displayName = "전체";
-                    
-                    html += `<button class="filter-chip ${activeClass}" onclick="applyFilter('${item.code}')">${displayName} (${item.count})</button>`;
+                    html += `<button class="filter-btn ${activeClass}" onclick="applyFilter(this, '${item.code}')">${displayName} (${item.count})</button>`;
                 }
             });
             filterArea.innerHTML = html;
         }
 
-        function applyFilter(kdcd) {
+        function applyFilter(btn, kdcd) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentState.pageIndex = 1;
             currentState.kdcd = kdcd;
-            searchHeritage();
+            document.getElementById('result-area').innerHTML = '<div class="loading">목록을 불러오는 중...</div>';
+            document.getElementById('loadMoreBtn').style.display = 'none';
+            loadList();
         }
 
-        function renderList(items) {
+        function showFavorites() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.fav-btn').classList.add('active');
             const resultArea = document.getElementById('result-area');
-            if (items.length === 0) {
-                resultArea.innerHTML = "<div class='loading'>검색 결과가 없습니다.</div>";
-                return;
-            }
+            document.getElementById('loadMoreBtn').style.display = 'none';
             resultArea.innerHTML = "";
 
-            items.forEach(data => {
+            if (favorites.length === 0) {
+                resultArea.innerHTML = "<div class='loading'>저장된 즐겨찾기가 없습니다.</div>";
+                return;
+            }
+
+            favorites.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "item";
-                const distHtml = data.distance ? `<span class="dist-badge">📏 ${data.distance.toFixed(1)}km</span>` : "";
-
                 div.innerHTML = `
-                    <div class="item-header">
-                        <span class="badge ${data.type.split(' ')[0]}">${data.type}</span>
-                        <span class="item-title">${data.name}</span>
-                        ${distHtml}
+                    <div class="item-header" onclick="triggerDetail('${item.kdcd}','${item.ctcd}','${item.asno}', this)">
+                        <span class="badge ${item.type.split(' ')[0]}">${item.type}</span>
+                        <span class="item-title">${item.name}</span>
                     </div>
-                    <div class="item-info">📍 눌러서 지도와 상세설명 보기</div>
-                    <div class="detail-view" id="detail-${data.kdcd}-${data.asno}">로딩 중...</div>
+                    <div class="item-info" onclick="triggerDetail('${item.kdcd}','${item.ctcd}','${item.asno}', this)">
+                        👇 상세 정보 보기
+                    </div>
+                    <div class="detail-view" id="detail-${item.kdcd}-${item.asno}">로딩 중...</div>
                 `;
-                
-                div.onclick = (e) => {
-                    if(!e.target.closest('.detail-view')) {
-                        toggleDetail(data.kdcd, data.ctcd, data.asno, div);
-                    }
-                };
                 resultArea.appendChild(div);
             });
         }
 
-        function sortByLocation() {
-            const btn = document.getElementById('gpsBtn');
-            btn.innerText = "📡 위치 확인 중...";
+        function loadMore() {
+            currentState.pageIndex++;
+            loadList(true);
+        }
 
-            if (!navigator.geolocation) { alert("위치 정보를 지원하지 않습니다."); return; }
-
-            navigator.geolocation.getCurrentPosition((position) => {
-                const myLat = position.coords.latitude;
-                const myLng = position.coords.longitude;
-
-                if (currentItems.length === 0) {
-                    // 리스트가 없으면 전체 검색 후 정렬
-                    currentState = { mode: 'nearby', query: "", regionCode: "", subRegionCode: "", kdcd: "" };
-                    searchHeritage().then(() => doSort(myLat, myLng));
+        async function loadList(isAppend = false) {
+            const resultArea = document.getElementById('result-area');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            try {
+                let url = `${LIST_URL}?pageIndex=${currentState.pageIndex}&pageUnit=10`;
+                
+                if(currentState.mode === 'name') {
+                    url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
                 } else {
-                    doSort(myLat, myLng);
+                    url += `&ccbaCtcd=${currentState.regionCode}`;
+                    // 하위 지역 필터: '00'이면 파라미터 생략 (전체 조회) 또는 '00' 전송
+                    // 테스트 결과 00을 보내면 안 되는 경우도 있어서, 특정 지역만 필터링
+                    if(currentState.subRegionCode && currentState.subRegionCode !== '00') {
+                        url += `&ccbaLcto=${currentState.subRegionCode}`;
+                    }
                 }
-                btn.innerText = "✅ 거리순 정렬 완료";
-            });
-        }
 
-        function doSort(myLat, myLng) {
-            currentItems.forEach(item => {
-                if (item.lat && item.lng && item.lat !== 0) {
-                    item.distance = getDistance(myLat, myLng, item.lat, item.lng);
+                if (currentState.kdcd) url += `&ccbaKdcd=${currentState.kdcd}`;
+
+                const response = await fetch(PROXY_BASE + encodeURIComponent(url));
+                const str = await response.text();
+                const xml = new DOMParser().parseFromString(str, "text/xml");
+                const items = xml.getElementsByTagName("item");
+                const totalCnt = parseInt(xml.getElementsByTagName("totalCnt")[0]?.textContent || "0");
+
+                if (!isAppend) resultArea.innerHTML = "";
+
+                if (totalCnt === 0) {
+                    resultArea.innerHTML = "<div class='loading'>검색 결과가 없습니다.</div>";
+                    return;
+                }
+
+                for (let item of items) {
+                    const name = item.getElementsByTagName("ccbaMnm1")[0].textContent;
+                    const type = item.getElementsByTagName("ccmaName")[0].textContent;
+                    const kdcd = item.getElementsByTagName("ccbaKdcd")[0].textContent;
+                    const ctcd = item.getElementsByTagName("ccbaCtcd")[0].textContent;
+                    const asno = item.getElementsByTagName("ccbaAsno")[0].textContent;
+
+                    const div = document.createElement("div");
+                    div.className = "item";
+                    div.innerHTML = `
+                        <div class="item-header" onclick="triggerDetail('${kdcd}','${ctcd}','${asno}', this)">
+                            <span class="badge ${type.split(' ')[0]}">${type}</span>
+                            <span class="item-title">${name}</span>
+                        </div>
+                        <div class="item-info" onclick="triggerDetail('${kdcd}','${ctcd}','${asno}', this)">
+                            👇 상세 정보 보기
+                        </div>
+                        <div class="detail-view" id="detail-${kdcd}-${asno}">로딩 중...</div>
+                    `;
+                    resultArea.appendChild(div);
+                }
+
+                if (currentState.pageIndex * 10 < totalCnt) {
+                    loadMoreBtn.style.display = 'block';
+                    loadMoreBtn.innerText = `결과 더보기 + (${currentState.pageIndex * 10} / ${totalCnt})`;
                 } else {
-                    item.distance = 99999;
+                    loadMoreBtn.style.display = 'none';
                 }
-            });
-            currentItems.sort((a, b) => a.distance - b.distance);
-            renderList(currentItems);
+
+            } catch (error) {
+                console.error(error);
+                if(!isAppend) resultArea.innerHTML = "<div class='loading'>에러가 발생했습니다.</div>";
+            }
         }
 
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            return R * c;
+        function triggerDetail(kdcd, ctcd, asno, element) {
+            const parent = element.closest('.item');
+            toggleDetail(kdcd, ctcd, asno, parent);
         }
-        function deg2rad(deg) { return deg * (Math.PI/180); }
 
         async function toggleDetail(kdcd, ctcd, asno, parentDiv) {
             const detailView = parentDiv.querySelector(".detail-view");
-            if (detailView.style.display === "block") { detailView.style.display = "none"; return; }
+
+            if (detailView.style.display === "block") {
+                detailView.style.display = "none";
+                return;
+            }
             detailView.style.display = "block";
+
             if (detailView.getAttribute("data-loaded") === "true") return;
 
             try {
-                const targetUrl = `${DETAIL_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
-                const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
+                const url = `${DETAIL_URL}?ccbaKdcd=${kdcd}&ccbaCtcd=${ctcd}&ccbaAsno=${asno}`;
+                const response = await fetch(PROXY_BASE + encodeURIComponent(url));
                 const str = await response.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(str, "text/xml");
+                const xml = new DOMParser().parseFromString(str, "text/xml");
 
-                const content = xml.getElementsByTagName("content")[0]?.textContent || "설명 없음";
+                const content = xml.getElementsByTagName("content")[0]?.textContent || "내용 없음";
                 const imgUrl = xml.getElementsByTagName("imageUrl")[0]?.textContent;
                 const lat = xml.getElementsByTagName("latitude")[0]?.textContent;
                 const lng = xml.getElementsByTagName("longitude")[0]?.textContent;
+                const name = xml.getElementsByTagName("ccbaMnm1")[0]?.textContent;
+                const type = xml.getElementsByTagName("ccmaName")[0]?.textContent || "";
 
-                let html = "";
-                if (imgUrl) html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img"><br>`;
-                html += `<div class="detail-desc">${content}</div>`;
+                const gcode = xml.getElementsByTagName("gcodeName")[0]?.textContent || "-"; 
+                const quan = xml.getElementsByTagName("ccbaQuan")[0]?.textContent || "-"; 
+                let date = xml.getElementsByTagName("ccbaAsdt")[0]?.textContent || "-"; 
+                const era = xml.getElementsByTagName("ccceName")[0]?.textContent || "-"; 
+                const owner = xml.getElementsByTagName("ccbaPoss")[0]?.textContent || "-";
+                const admin = xml.getElementsByTagName("ccbaAdmin")[0]?.textContent || "-";
+                const location = xml.getElementsByTagName("ccbaLcad")[0]?.textContent || "-";
+
+                if(date.length === 8) date = `${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}`;
+
+                const isFav = favorites.some(f => f.kdcd === kdcd && f.asno === asno);
+                const starClass = isFav ? "active" : "";
+
+                let html = `
+                    <div class="detail-header">
+                        <span></span>
+                        <span class="fav-star ${starClass}" onclick="toggleFavorite('${kdcd}','${ctcd}','${asno}','${name}','${type}', this)">★</span>
+                    </div>
+                    <table class="summary-table">
+                        <tr><th>분류</th><td>${gcode}</td><th>수량</th><td>${quan}</td></tr>
+                        <tr><th>지정일</th><td>${date}</td><th>시대</th><td>${era}</td></tr>
+                        <tr><th>소유자</th><td>${owner}</td><th>관리자</th><td>${admin}</td></tr>
+                        <tr><th>소재지</th><td colspan="3">${location}</td></tr>
+                    </table>
+                `;
+
+                if (imgUrl) {
+                    html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img">`;
+                }
+
+                html += `<div id="gallery-${kdcd}-${asno}" class="gallery-container"></div>`;
+                html += `<div class="detail-desc">${formatText(content)}</div>`;
 
                 const mapId = `map-${kdcd}-${asno}`;
-                if (lat && lng && lat != "0") html += `<div id="${mapId}" class="map-container"></div>`;
+                if (lat && lng && lat != "0") {
+                    html += `
+                        <div class="map-wrapper">
+                            <button class="action-btn btn-map" onclick="loadMap('${mapId}', ${lat}, ${lng}, this)">
+                                📍 지도 위치 확인하기
+                            </button>
+                            <div id="${mapId}" class="map-container" style="display:none;"></div>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="external-links">
+                        <button class="action-btn btn-external" onclick="window.open('https://www.google.com/search?q=${name}')">G 구글 검색</button>
+                        <button class="action-btn btn-external" onclick="searchGemini('${name}')">✨ 제미나이 질문</button>
+                        <button class="action-btn btn-external" onclick="shareLink('${name}')">🔗 링크 복사</button>
+                    </div>
+                `;
 
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
+                
+                loadGalleryImages(name, kdcd, asno);
 
-                if (lat && lng && lat != "0") drawNaverMap(mapId, parseFloat(lat), parseFloat(lng));
-
-            } catch (e) { detailView.innerHTML = "상세 정보를 가져올 수 없습니다."; }
+            } catch (e) {
+                console.error(e);
+                detailView.innerHTML = "정보를 불러올 수 없습니다.";
+            }
         }
 
-        function drawNaverMap(elementId, lat, lng) {
-            if (typeof naver === "undefined") return;
-            const map = new naver.maps.Map(elementId, { center: new naver.maps.LatLng(lat, lng), zoom: 16 });
-            new naver.maps.Marker({ position: new naver.maps.LatLng(lat, lng), map: map });
+        async function loadGalleryImages(name, kdcd, asno) {
+            try {
+                const url = `${IMAGE_URL}?ccbaMnm1=${encodeURIComponent(name)}&pageUnit=50`;
+                const response = await fetch(PROXY_BASE + encodeURIComponent(url));
+                const str = await response.text();
+                const xml = new DOMParser().parseFromString(str, "text/xml");
+                const items = xml.getElementsByTagName("item");
+
+                const galleryDiv = document.getElementById(`gallery-${kdcd}-${asno}`);
+                if (!items || items.length === 0) {
+                    galleryDiv.style.display = 'none';
+                    return;
+                }
+
+                let imgHtml = "";
+                for(let i=0; i < items.length; i++) {
+                    const imgUrl = items[i].getElementsByTagName("imageUrl")[0]?.textContent;
+                    const imgDesc = items[i].getElementsByTagName("ccimDesc")[0]?.textContent || "이미지";
+
+                    if(imgUrl) {
+                         imgHtml += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="gallery-img" title="${imgDesc}" onclick="window.open('${imgUrl}')">`;
+                    }
+                }
+                
+                if(imgHtml) {
+                    galleryDiv.innerHTML = imgHtml;
+                    galleryDiv.style.display = 'flex';
+                } else {
+                    galleryDiv.style.display = 'none';
+                }
+            } catch(e) { console.log("Gallery load failed"); }
+        }
+
+        function toggleFavorite(kdcd, ctcd, asno, name, type, icon) {
+            const index = favorites.findIndex(f => f.kdcd === kdcd && f.asno === asno);
+            if (index === -1) {
+                favorites.push({ kdcd, ctcd, asno, name, type });
+                icon.classList.add('active');
+                alert("⭐ 즐겨찾기에 추가되었습니다!");
+            } else {
+                favorites.splice(index, 1);
+                icon.classList.remove('active');
+                alert("즐겨찾기가 해제되었습니다.");
+            }
+            localStorage.setItem('myHeritageFavs', JSON.stringify(favorites));
+            const favBtn = document.querySelector('.fav-btn');
+            if(favBtn) favBtn.innerText = `⭐ 즐겨찾기 (${favorites.length})`;
+        }
+
+        function shareLink(name) {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert("🔗 링크가 복사되었습니다!\n친구에게 붙여넣기(Ctrl+V)해서 공유해보세요.");
+            });
+        }
+
+        function formatText(text) {
+            const sentences = text.split('.');
+            let result = "";
+            let count = 0;
+            for(let s of sentences) {
+                if(s.trim().length > 0) {
+                    result += s + ".";
+                    count++;
+                    if(count % 3 === 0) result += "<br><br>";
+                }
+            }
+            return result;
+        }
+
+        function loadMap(mapId, lat, lng, btn) {
+            const mapDiv = document.getElementById(mapId);
+            if(mapDiv.style.display === 'block') {
+                mapDiv.style.display = 'none';
+                btn.innerText = "📍 지도 위치 확인하기";
+                return;
+            }
+            mapDiv.style.display = 'block';
+            btn.innerText = "지도 닫기";
+
+            if (!mapDiv.hasChildNodes()) {
+                if (typeof naver === "undefined") {
+                    mapDiv.innerHTML = "<p style='padding:20px; text-align:center'>지도 API 로드 실패</p>";
+                    return;
+                }
+                const map = new naver.maps.Map(mapId, { center: new naver.maps.LatLng(lat, lng), zoom: 16 });
+                new naver.maps.Marker({ position: new naver.maps.LatLng(lat, lng), map: map });
+            }
+        }
+
+        function searchGemini(name) {
+            const prompt = `${name}의 역사적 가치와 특징에 대해 설명해줘`;
+            navigator.clipboard.writeText(prompt).then(() => {
+                alert(`📋 질문 내용이 복사되었습니다!\n\n"${prompt}"\n\n열리는 제미나이 창에 붙여넣기(Ctrl+V) 하세요.`);
+                window.open("https://gemini.google.com/app");
+            });
         }
     </script>
 </body>
