@@ -9,15 +9,15 @@
     <meta property="og:title" content="국가유산 지도 검색">
     <meta name="referrer" content="no-referrer-when-downgrade">
     
-    <!-- 네이버 지도 API (기존 키 유지) -->
+    <!-- 네이버 지도 API -->
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=q9guv183ig"></script>
     
     <style>
         /* 기본 설정 */
-        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; padding-bottom: 100px; color: #333; }
+        body { font-family: 'Pretendard', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; min-height: 100vh; padding-bottom: 150px; color: #333; box-sizing: border-box; }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; letter-spacing: -1px; cursor: pointer; }
         
-        /* ✨ 3단 탭 디자인 */
+        /* 3단 탭 디자인 */
         .mode-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
         .mode-tab { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-weight: bold; color: #888; background: none; border: none; font-size: 1rem; transition: 0.2s; white-space: nowrap; }
         .mode-tab.active { color: #2c3e50; border-bottom: 3px solid #2c3e50; margin-bottom: -2px; }
@@ -36,7 +36,7 @@
         .gps-btn { background-color: #27ae60; width: 100%; padding: 15px; border-radius: 8px; color: white; font-weight: bold; border: none; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .gps-btn:hover { background-color: #219150; }
 
-        /* 지역 선택 칩 */
+        /* 지역 선택 칩 (PC 줄바꿈 대응) */
         .region-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
         .chip-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; color: #555; cursor: pointer; font-size: 0.95em; transition: 0.2s; }
         .chip-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
@@ -44,6 +44,17 @@
         /* 하위 지역 */
         #sub-region-area { display: none; border-top: 1px dashed #ddd; padding-top: 15px; margin-bottom: 20px; text-align: center; background-color: #eef2f5; padding: 15px; border-radius: 8px; }
         .sub-region-title { font-size: 0.9em; color: #2c3e50; margin-bottom: 10px; font-weight: bold; display: block; }
+
+        /* ✨ 알약 필터 (복구됨) */
+        .filter-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+        .filter-chip { 
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 8px 16px; font-size: 0.9rem; font-weight: 500; 
+            color: #555; background-color: white; border: 1px solid #ddd; 
+            border-radius: 9999px; cursor: pointer; transition: all 0.2s; 
+        }
+        .filter-chip:hover { background-color: #f0f0f0; }
+        .filter-chip.active { background-color: #2c3e50; color: white; border-color: #2c3e50; font-weight: bold; }
 
         /* 리스트 아이템 */
         #result-area { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
@@ -66,13 +77,26 @@
         .detail-desc { line-height: 1.6; color: #444; margin-top: 10px; word-break: keep-all; }
         .map-container { width: 100%; height: 300px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; }
         .loading { text-align: center; color: #888; padding: 30px; }
+
+        /* ✨ 관련 사이트 배너 (복구됨) */
+        .related-section { margin-top: 40px; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .related-title { font-size: 0.9em; color: #888; margin-bottom: 10px; text-align: center; }
+        .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+        .link-card { background: white; border-radius: 8px; padding: 10px 5px; text-align: center; text-decoration: none; color: #555; font-size: 0.8em; font-weight: bold; border: 1px solid #eee; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .link-card:hover { border-color: #2c3e50; color: #2c3e50; }
+
+        /* ✨ 푸터 및 카운터 (복구됨) */
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 0.85em; line-height: 1.6; }
+        .contact-link { display: inline-block; margin-top: 5px; cursor: pointer; color: #555; font-weight: bold; }
+        .hits-badge { margin-top: 10px; }
+        .hits-badge img { height: 20px; }
     </style>
 </head>
 <body>
 
     <h1 onclick="location.reload()">🏛️ 국가유산 지도 검색</h1>
     
-    <!-- ✨ 3단 탭 메뉴 -->
+    <!-- 3단 탭 메뉴 -->
     <div class="mode-tabs">
         <button class="mode-tab active" onclick="switchMode('name')">이름으로 찾기</button>
         <button class="mode-tab" onclick="switchMode('region')">지역으로 찾기</button>
@@ -99,23 +123,46 @@
     <!-- 3. 내 근처 찾기 -->
     <div id="search-nearby" class="search-container">
         <p style="text-align:center; color:#666; margin-bottom:15px; font-size:0.9em;">
-            현재 위치를 확인하여 가까운 문화유산을 찾아줍니다.<br>
-            (기본적으로 주요 문화유산을 불러온 뒤 거리순으로 정렬합니다)
+            현재 위치를 확인하여 가까운 순서대로 정렬합니다.
         </p>
         <button onclick="sortByLocation()" class="gps-btn" id="gpsBtn">
             📡 내 위치 확인하고 검색하기
         </button>
     </div>
 
+    <!-- ✨ 필터 탭 (알약 모양 복구) -->
+    <div id="filter-area" class="filter-container"></div>
+
     <div id="result-area"></div>
+
+    <!-- ✨ 관련 사이트 배너 복구 -->
+    <div class="related-section">
+        <h3 class="related-title">관련 사이트</h3>
+        <div class="quick-links">
+            <a href="https://www.khs.go.kr" target="_blank" class="link-card"><span>🏛️</span><span>국가유산청</span></a>
+            <a href="https://www.heritage.go.kr" target="_blank" class="link-card"><span>🌏</span><span>국가유산포털</span></a>
+            <a href="https://www.museum.go.kr" target="_blank" class="link-card"><span>🏺</span><span>국립중앙박물관</span></a>
+            <a href="https://korean.visitkorea.or.kr" target="_blank" class="link-card"><span>✈️</span><span>구석구석</span></a>
+        </div>
+    </div>
+
+    <!-- ✨ 푸터 복구 -->
+    <div class="footer">
+        - Made by 이태건 -<br>
+        <span class="contact-link" onclick="copyEmail()">📩 문의하기 (Contact)</span><br>
+        <div class="hits-badge">
+            <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fheritagekorea.vercel.app&countColor=%232C3E50&style=flat" />
+        </div>
+    </div>
 
     <script>
         const PROXY_BASE = "/api/proxy?url=";
         const LIST_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiList.do";
         const DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do";
+        const MY_EMAIL = "naturekr@gmail.com";
 
         let currentItems = [];
-        let currentMode = 'name';
+        let currentState = { query: "", regionCode: "", subRegionCode: "", kdcd: "" };
 
         // 지역 데이터 (내장)
         const REGIONS = [
@@ -147,12 +194,28 @@
             "50": [{code:"01",name:"제주시"},{code:"02",name:"서귀포시"}]
         };
 
+        const CATEGORIES = [
+            { code: "", name: "전체" }, { code: "11", name: "국보" }, { code: "12", name: "보물" },
+            { code: "13", name: "사적" }, { code: "14", name: "사적및명승" }, { code: "15", name: "명승" },
+            { code: "16", name: "천연기념물" }, { code: "17", name: "국가민속" }, { code: "18", name: "국가무형" },
+            { code: "79", name: "국가등록" }, { code: "21", name: "시도유형" }, { code: "22", name: "시도무형" },
+            { code: "23", name: "시도기념물" }, { code: "24", name: "시도민속" }, { code: "25", name: "시도등록" },
+            { code: "31", name: "문화유산자료" }, { code: "80", name: "이북5도" }
+        ];
+
         window.onload = function() {
             renderRegionGrid();
+            createFilterTabs(""); 
         };
 
+        function copyEmail() {
+            navigator.clipboard.writeText(MY_EMAIL).then(() => {
+                alert(`📧 이메일 주소가 복사되었습니다!\n(${MY_EMAIL})`);
+            });
+        }
+
         function switchMode(mode) {
-            currentMode = mode;
+            currentState.mode = mode;
             document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.search-container').forEach(c => c.classList.remove('active'));
             
@@ -168,7 +231,9 @@
             }
             
             document.getElementById('result-area').innerHTML = "";
+            document.getElementById('filter-area').innerHTML = "";
             document.getElementById('sub-region-area').style.display = 'none';
+            document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         }
 
         function renderRegionGrid() {
@@ -184,9 +249,12 @@
             document.getElementById('region-main-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
+            currentState.regionCode = code;
+            currentState.subRegionCode = "";
+            currentState.query = ""; // 지역 검색 시 검색어 초기화
+            
             renderSubRegions(code);
-            // 시도 선택 시 바로 전체 검색
-            searchHeritage(null, code, null);
+            searchHeritage(); // 전체 검색
         }
 
         function renderSubRegions(mainCode) {
@@ -210,37 +278,37 @@
         function selectSubRegion(subCode, mainCode, btn) {
             document.getElementById('region-sub-scroll').querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            // 시군구 검색
-            searchHeritage(null, mainCode, subCode);
+            currentState.subRegionCode = subCode;
+            searchHeritage();
         }
 
-        async function searchHeritage(query, ctcd, lcto) {
+        async function searchByName() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) { alert("검색어를 입력하세요."); return; }
+            currentState = { mode: 'name', query: query, regionCode: "", subRegionCode: "", kdcd: "" };
+            searchHeritage();
+        }
+
+        async function searchHeritage() {
             const resultArea = document.getElementById('result-area');
             resultArea.innerHTML = '<div class="loading">데이터를 불러오는 중입니다...</div>';
+            
+            let targetUrl = `${LIST_URL}?pageUnit=50`;
+            if (currentState.query) targetUrl += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
+            if (currentState.regionCode) targetUrl += `&ccbaCtcd=${currentState.regionCode}`;
+            if (currentState.subRegionCode) targetUrl += `&ccbaLcto=${currentState.subRegionCode}`;
+            if (currentState.kdcd) targetUrl += `&ccbaKdcd=${currentState.kdcd}`;
 
             try {
-                let targetUrl = `${LIST_URL}?pageUnit=50`; // 넉넉하게 50개
-                
-                if (query) targetUrl += `&ccbaMnm1=${encodeURIComponent(query)}`;
-                if (ctcd) targetUrl += `&ccbaCtcd=${ctcd}`;
-                if (lcto) targetUrl += `&ccbaLcto=${lcto}`;
-
                 const response = await fetch(PROXY_BASE + encodeURIComponent(targetUrl));
                 const str = await response.text();
                 const parser = new DOMParser();
                 const xml = parser.parseFromString(str, "text/xml");
                 const items = xml.getElementsByTagName("item");
 
-                currentItems = []; // 초기화
-
-                if (items.length === 0) {
-                    resultArea.innerHTML = "<div class='loading'>검색 결과가 없습니다.</div>";
-                    return;
-                }
-
+                currentItems = [];
                 for (let item of items) {
-                    const data = {
+                    currentItems.push({
                         name: item.getElementsByTagName("ccbaMnm1")[0].textContent,
                         type: item.getElementsByTagName("ccmaName")[0].textContent,
                         kdcd: item.getElementsByTagName("ccbaKdcd")[0].textContent,
@@ -249,11 +317,12 @@
                         lat: parseFloat(item.getElementsByTagName("latitude")[0]?.textContent || 0),
                         lng: parseFloat(item.getElementsByTagName("longitude")[0]?.textContent || 0),
                         distance: null
-                    };
-                    currentItems.push(data);
+                    });
                 }
-
                 renderList(currentItems);
+                
+                // ✨ 비동기 카운트 업데이트 (속도 저하 방지)
+                updateFilterCounts();
 
             } catch (error) {
                 console.error(error);
@@ -261,17 +330,57 @@
             }
         }
 
+        async function updateFilterCounts() {
+            const filterArea = document.getElementById('filter-area');
+            filterArea.innerHTML = `<button class="filter-chip active">전체 로딩중...</button>`; 
+
+            const promises = CATEGORIES.map(async (cat) => {
+                let url = `${LIST_URL}?pageUnit=1&ccbaKdcd=${cat.code}`;
+                if (currentState.query) url += `&ccbaMnm1=${encodeURIComponent(currentState.query)}`;
+                if (currentState.regionCode) url += `&ccbaCtcd=${currentState.regionCode}`;
+                if (currentState.subRegionCode) url += `&ccbaLcto=${currentState.subRegionCode}`;
+
+                try {
+                    const res = await fetch(PROXY_BASE + encodeURIComponent(url));
+                    const str = await res.text();
+                    const xml = new DOMParser().parseFromString(str, "text/xml");
+                    const totalCnt = xml.getElementsByTagName("totalCnt")[0]?.textContent || "0";
+                    return { ...cat, count: parseInt(totalCnt) };
+                } catch { return { ...cat, count: 0 }; }
+            });
+
+            const results = await Promise.all(promises);
+            
+            let html = "";
+            results.forEach((item) => {
+                if (item.count > 0) {
+                    const activeClass = (currentState.kdcd === item.code) ? "active" : "";
+                    let displayName = item.name.replace("문화유산", "").replace("유산", ""); 
+                    if(item.name === "전체") displayName = "전체";
+                    
+                    html += `<button class="filter-chip ${activeClass}" onclick="applyFilter('${item.code}')">${displayName} (${item.count})</button>`;
+                }
+            });
+            filterArea.innerHTML = html;
+        }
+
+        function applyFilter(kdcd) {
+            currentState.kdcd = kdcd;
+            searchHeritage();
+        }
+
         function renderList(items) {
             const resultArea = document.getElementById('result-area');
+            if (items.length === 0) {
+                resultArea.innerHTML = "<div class='loading'>검색 결과가 없습니다.</div>";
+                return;
+            }
             resultArea.innerHTML = "";
 
             items.forEach(data => {
                 const div = document.createElement("div");
                 div.className = "item";
-                
-                const distHtml = data.distance 
-                    ? `<span class="dist-badge">📏 ${data.distance.toFixed(1)}km</span>` 
-                    : "";
+                const distHtml = data.distance ? `<span class="dist-badge">📏 ${data.distance.toFixed(1)}km</span>` : "";
 
                 div.innerHTML = `
                     <div class="item-header">
@@ -292,43 +401,29 @@
             });
         }
 
-        // ✨ [내 주변 찾기 핵심 로직]
+        // 내 주변 찾기
         function sortByLocation() {
             const btn = document.getElementById('gpsBtn');
             btn.innerText = "📡 위치 확인 중...";
 
-            if (!navigator.geolocation) {
-                alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
-                return;
-            }
+            if (!navigator.geolocation) { alert("위치 정보를 지원하지 않습니다."); return; }
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const myLat = position.coords.latitude;
-                    const myLng = position.coords.longitude;
+            navigator.geolocation.getCurrentPosition((position) => {
+                const myLat = position.coords.latitude;
+                const myLng = position.coords.longitude;
 
-                    // 만약 리스트가 비어있으면, 자동으로 '전체(주요 문화재)'를 먼저 불러옴
-                    if (currentItems.length === 0) {
-                        // 예: 서울(11) 지역을 기본으로 불러오거나, 전체 검색을 시도
-                        // 여기서는 편의상 '전체' 검색을 시도합니다.
-                         searchHeritage("", "", "").then(() => {
-                             calcAndSort(myLat, myLng);
-                         });
-                    } else {
-                        calcAndSort(myLat, myLng);
-                    }
-
-                    btn.innerText = "✅ 거리순 정렬 완료";
-                },
-                (error) => {
-                    alert("위치 정보를 가져올 수 없습니다.");
-                    btn.innerText = "📍 내 주변 순으로 정렬하기";
+                if (currentItems.length === 0) {
+                    currentState = { mode: 'nearby', query: "", regionCode: "", subRegionCode: "", kdcd: "" };
+                    searchHeritage().then(() => doSort(myLat, myLng));
+                } else {
+                    doSort(myLat, myLng);
                 }
-            );
+                btn.innerText = "✅ 거리순 정렬 완료";
+            });
         }
 
-        function calcAndSort(myLat, myLng) {
-             currentItems.forEach(item => {
+        function doSort(myLat, myLng) {
+            currentItems.forEach(item => {
                 if (item.lat && item.lng && item.lat !== 0) {
                     item.distance = getDistance(myLat, myLng, item.lat, item.lng);
                 } else {
@@ -343,21 +438,15 @@
             const R = 6371; 
             const dLat = deg2rad(lat2 - lat1);
             const dLon = deg2rad(lon2 - lon1);
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
             return R * c;
         }
-
-        function deg2rad(deg) { return deg * (Math.PI / 180); }
+        function deg2rad(deg) { return deg * (Math.PI/180); }
 
         async function toggleDetail(kdcd, ctcd, asno, parentDiv) {
             const detailView = parentDiv.querySelector(".detail-view");
-            if (detailView.style.display === "block") {
-                detailView.style.display = "none";
-                return;
-            }
+            if (detailView.style.display === "block") { detailView.style.display = "none"; return; }
             detailView.style.display = "block";
             if (detailView.getAttribute("data-loaded") === "true") return;
 
@@ -374,47 +463,24 @@
                 const lng = xml.getElementsByTagName("longitude")[0]?.textContent;
 
                 let html = "";
-                if (imgUrl) {
-                    const safeImgUrl = PROXY_BASE + encodeURIComponent(imgUrl);
-                    html += `<img src="${safeImgUrl}" class="detail-img"><br>`;
-                }
+                if (imgUrl) html += `<img src="${PROXY_BASE + encodeURIComponent(imgUrl)}" class="detail-img"><br>`;
                 html += `<div class="detail-desc">${content}</div>`;
 
                 const mapId = `map-${kdcd}-${asno}`;
-                if (lat && lng && lat != "0" && lng != "0") {
-                    html += `<div id="${mapId}" class="map-container"></div>`;
-                } else {
-                    html += `<div style="color:#888; margin-top:10px;">(위치 정보가 없는 문화유산입니다)</div>`;
-                }
+                if (lat && lng && lat != "0") html += `<div id="${mapId}" class="map-container"></div>`;
 
                 detailView.innerHTML = html;
                 detailView.setAttribute("data-loaded", "true");
 
-                if (lat && lng && lat != "0" && lng != "0") {
-                    drawNaverMap(mapId, parseFloat(lat), parseFloat(lng));
-                }
+                if (lat && lng && lat != "0") drawNaverMap(mapId, parseFloat(lat), parseFloat(lng));
 
-            } catch (e) {
-                detailView.innerHTML = "상세 정보를 가져올 수 없습니다.";
-            }
+            } catch (e) { detailView.innerHTML = "상세 정보를 가져올 수 없습니다."; }
         }
 
         function drawNaverMap(elementId, lat, lng) {
-            if (typeof naver === "undefined") {
-                const el = document.getElementById(elementId);
-                el.innerHTML = "<div style='padding:20px; text-align:center;'>지도를 불러올 수 없습니다.<br>(URL 설정을 확인해주세요)</div>";
-                return;
-            }
-
-            const mapOptions = {
-                center: new naver.maps.LatLng(lat, lng),
-                zoom: 16
-            };
-            const map = new naver.maps.Map(elementId, mapOptions);
-            new naver.maps.Marker({
-                position: new naver.maps.LatLng(lat, lng),
-                map: map
-            });
+            if (typeof naver === "undefined") return;
+            const map = new naver.maps.Map(elementId, { center: new naver.maps.LatLng(lat, lng), zoom: 16 });
+            new naver.maps.Marker({ position: new naver.maps.LatLng(lat, lng), map: map });
         }
     </script>
 </body>
